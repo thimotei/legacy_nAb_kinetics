@@ -31,10 +31,7 @@ preprocess_data <- function(
                          voc = factor(episode_variant_summarised),
                          vax_num = as.numeric(dose))][order(original_id, date)]
 
-  #--- changing IDs
-  # Set a seed for reproducibility, to recover jumbled IDs
-  set.seed(123)
-
+  #--- Changing IDs
   # Shuffle the data.table rows to jumble up the original IDs
   dt_proc <- dt_proc[sample(.N)]
 
@@ -180,19 +177,7 @@ preprocess_data <- function(
                  variable.name = "titre_type",
                  value.name = "titre")
 
-  if(range == "original") {
-    dt_out[, Range := "Original"]
-  } else if(range == "extended") {
-      dt_out[, Range := "Extended"]
-  } else if(range == "both") {
-    dt_out[!titre_type %like% "ext", Range := "Original"]
-    dt_out[titre_type %like% "ext", Range := "Extended"]
-
-    dt_out[titre_type %like% "ext",
-             titre_type := stringr::str_remove(titre_type, "_ext")]
-  }
-
-  # Tweaking dodgy titre value
+  # Tweaking dodgy titre value - over upper censored limit
   dt_out[!is.na(titre) &
          Range == "Original" &
          titre > 2560 &
@@ -210,6 +195,7 @@ preprocess_data <- function(
       (last_exp_date > last_bleed_date & last_exp_date < date))]
   }
 
+  # Removing possible duplicate rows after the many melts!
   dt_out <- dt_out |> unique()
 
   # Adding observation ID
