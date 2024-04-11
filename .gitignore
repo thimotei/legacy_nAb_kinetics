@@ -1,0 +1,12 @@
+data/
+outputs/fits/
+outputs/drafts/
+outputs/figures/
+.DS_Store
+.RData
+.Rhistory
+.Rproj.user
+*.csv
+*.dcf
+manuscript/
+
