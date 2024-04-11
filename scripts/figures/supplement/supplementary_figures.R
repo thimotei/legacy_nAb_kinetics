@@ -7,27 +7,27 @@ library(ggnewscale)
 
 #--- Vaccine timings
 
-# Munging vaccine timings into right format for plotting all individual 
+# Munging vaccine timings into right format for plotting all individual
 dt_vax_dates_wide <- dt_all_data_plot[
   , .(dose_1_date, dose_2_date, dose_3_date, dose_4_date, dose_5_date),
-  by = data_id]
+  by = id]
 
 dt_vax_types_wide <- dt_all_data_plot[
   , .(dose_1_type, dose_2_type, dose_3_type, dose_4_type, dose_5_type),
-  by = data_id]
+  by = id]
 
 # Melting types and dates separately and merging (is there a way to do
 # this in one go?)
 dt_vax_dates <- melt(
-  dt_vax_dates_wide, 
-  measure.vars = patterns("^dose_\\d+_date$"), 
+  dt_vax_dates_wide,
+  measure.vars = patterns("^dose_\\d+_date$"),
   value.name = "vax_date",
   variable.name = "dose") |> unique()
 
 dt_vax_types <- melt(
-  dt_vax_types_wide, 
-  measure.vars = patterns("^dose_\\d+_type$"), 
-  value.name = "vax_type", 
+  dt_vax_types_wide,
+  measure.vars = patterns("^dose_\\d+_type$"),
+  value.name = "vax_type",
   variable.name = "dose") |> unique()
 
 # Removing date and types, just need which dose it is
@@ -46,7 +46,7 @@ dt_vax_types[dose == "dose_5_type", dose := "5"]
 # Merging types and dates
 dt_vax_long <- merge(
   dt_vax_dates, dt_vax_types,
-  by = c("data_id", "dose"))
+  by = c("id", "dose"))
 
 # Changing from factor to numeric, need to condition on dose
 dt_vax_long[, dose := factor(dose, levels = c(1, 2, 3, 4, 5))][
@@ -55,50 +55,50 @@ dt_vax_long[, vax_type := factor(vax_type)]
 
 # Removing NAs
 dt_vax_long_trim <- dt_vax_long[
-  , .(vax_date = unique(vax_date)), 
-  by = .(data_id, dose, vax_type)][
-  order(data_id, dose)][!is.na(vax_date)]
+  , .(vax_date = unique(vax_date)),
+  by = .(id, dose, vax_type)][
+  order(id, dose)][!is.na(vax_date)]
 
 # Add fake final date to create the line for the final dose per ID easily
-dt_vax_long_trim[, max_dose := max(dose), by = data_id]
+dt_vax_long_trim[, max_dose := max(dose), by = id]
 max_date <- dt_vax_long_trim[, max(vax_date)]
-max_dose_types <- dt_vax_long_trim[dose == max_dose, .(data_id, max_dose, vax_type)]
-extra_rows <- max_dose_types[, .(dose = max_dose, vax_type, vax_date = max_date), by = data_id]
+max_dose_types <- dt_vax_long_trim[dose == max_dose, .(id, max_dose, vax_type)]
+extra_rows <- max_dose_types[, .(dose = max_dose, vax_type, vax_date = max_date), by = id]
 dt_vax_long_trim_extended <- rbindlist(list(dt_vax_long_trim, extra_rows), fill = TRUE)
-setorder(dt_vax_long_trim_extended, data_id, dose)
+setorder(dt_vax_long_trim_extended, id, dose)
 
 # Reordering IDs based on their minimum vaccination date, for plotting
 dt_vax_plot <- dt_vax_long_trim_extended[
-  , data_id := fct_reorder(
-  factor(data_id), vax_date, .fun = min)]
+  , id := fct_reorder(
+  factor(id), vax_date, .fun = min)]
 
 # Plotting timings of vaccines
-p_timings <- ggplot() + 
+p_timings <- ggplot() +
   geom_line(
     data = dt_vax_plot,
     aes(x = vax_date,
-        y = data_id,
-        group = data_id,
+        y = id,
+        group = id,
         colour = factor(dose)), size = 1.2) +
-  geom_point(data = dt_all_data_plot[, .(date = unique(date)), by = data_id], 
-             aes(x = date, y = data_id), size = 1, shape = 2) + 
-    geom_vline(aes(xintercept = date_delta), linetype = "dashed") + 
+  geom_point(data = dt_all_data_plot[, .(date = unique(date)), by = id],
+             aes(x = date, y = id), size = 1, shape = 2) +
+    geom_vline(aes(xintercept = date_delta), linetype = "dashed") +
     geom_vline(aes(xintercept = date_ba2), linetype = "dashed") +
     geom_vline(aes(xintercept = date_xbb), linetype = "dashed") +
     theme_linedraw() +
     theme(axis.text.y=element_blank(),
-          legend.position = "bottom", 
+          legend.position = "bottom",
           text = element_text(size = 9, family = "Helvetica"),
           strip.placement = "outside",
           plot.title = element_text(face = "plain", size = 9),
-          legend.box = "vertical", 
+          legend.box = "vertical",
           legend.margin = margin(),
           strip.background = element_rect(fill="white"),
-          strip.text = element_text(colour = 'black')) + 
-    scale_x_date(date_labels = "%b %Y") + 
+          strip.text = element_text(colour = 'black')) +
+    scale_x_date(date_labels = "%b %Y") +
   scale_colour_nejm() +
   labs(x = "Date", y = "Participant", colour = "Vaccination")
-  
+
 print(p_timings)
 
 ggsave("outputs/figures/supplementary_figures/vaccine_timings.png",
@@ -127,10 +127,10 @@ p_figure_2_all_panels <- build_figure_2(
   alpha_fits_post = 0.15,
   manual_facet_order = c("Delta wave", "BA.2 wave", "XBB wave"),
   plot_beyond = TRUE,
-  plot_data = FALSE) + 
-  scale_colour_manual(values = manual_pal_figure) + 
+  plot_data = FALSE) +
+  scale_colour_manual(values = manual_pal_figure) +
   scale_fill_manual(values = manual_pal_figure) +
-  theme_linedraw() + 
+  theme_linedraw() +
   theme(legend.position = "none",
         text = element_text(size = 8, family = "Helvetica"),
         strip.background =element_rect(fill="white"),
@@ -163,10 +163,10 @@ p_figure_2_all_panels_full_only <-build_figure_2(
   alpha_fits_post = 0.5,
   manual_facet_order = c("Delta wave", "BA.2 wave", "XBB wave"),
   plot_beyond = TRUE,
-  plot_data = FALSE) + 
-  scale_colour_manual(values = manual_pal_figure) + 
+  plot_data = FALSE) +
+  scale_colour_manual(values = manual_pal_figure) +
   scale_fill_manual(values = manual_pal_figure) +
-  theme_linedraw() + 
+  theme_linedraw() +
   theme(legend.position = "none",
         text = element_text(size = 8, family = "Helvetica"),
         strip.background =element_rect(fill="white"),
@@ -183,20 +183,20 @@ ggsave("outputs/figures/supplementary_figures/figure_2_all_panels_full_only.png"
 ###########################################
 ## FIGURE S3 - ALL POPULATION-POSTERIORS ##
 ###########################################
-  
+
 dt_pop_posterior_delta <- extract_parameters_pop_clean(
   fit_delta_full, dt_data = dt_delta_data_full,
-  dt_data_stan = dt_delta_full_stan, stan_data = stan_data_delta_full, 
+  dt_data_stan = dt_delta_full_stan, stan_data = stan_data_delta_full,
   formula = formula_delta, format = "long")
 
 dt_pop_posterior_ba2 <- extract_parameters_pop_clean(
   fit_ba2_full, dt_data = dt_ba2_data_full,
-  dt_data_stan = dt_ba2_full_stan, stan_data = stan_data_ba2_full, 
+  dt_data_stan = dt_ba2_full_stan, stan_data = stan_data_ba2_full,
   formula = formula_ba2, format = "long")
 
 dt_pop_posterior_xbb <- extract_parameters_pop_clean(
   fit_xbb_full, dt_data = dt_xbb_data_full,
-  dt_data_stan = dt_xbb_full_stan, stan_data = stan_data_xbb_full, 
+  dt_data_stan = dt_xbb_full_stan, stan_data = stan_data_xbb_full,
   formula = formula_xbb, format = "long")
 
 dt_pop_posterior_all <- rbind(
@@ -220,20 +220,20 @@ dt_pop_posterior_all[variable == "beta_m3", variable := "m3 effect size"]
 
 p_population_posteriors <- dt_pop_posterior_all[, Wave := fct_relevel(Wave, "Delta wave")][
   , `Infection history` := fct_relevel(
-    `Infection history`, c("Infection naive", "Previously infected (Pre-Omicron)"))] |> 
-  ggplot() + 
+    `Infection history`, c("Infection naive", "Previously infected (Pre-Omicron)"))] |>
+  ggplot() +
   geom_density_ridges(aes(
-    x = value, y = factor(`Titre type`), 
-    group = interaction(Wave, `Titre type`), fill = factor(`Titre type`))) + 
+    x = value, y = factor(`Titre type`),
+    group = interaction(Wave, `Titre type`), fill = factor(`Titre type`))) +
   facet_nested(`Infection history` ~ variable , scales = "free") +
   scale_fill_manual(values = manual_pal_figure) +
-  theme_linedraw() + 
+  theme_linedraw() +
   theme(legend.position = "none",
         text = element_text(size = 8, family = "Helvetica"),
         strip.background =element_rect(fill="white"),
         strip.text = element_text(colour = 'black'),
         strip.placement = "outside",
-        plot.title = element_text(face = "bold", size = 9)) + 
+        plot.title = element_text(face = "bold", size = 9)) +
   labs(x = "Value", y = "Titre type")
 
 ggsave("outputs/figures/supplementary_figures/pop_posteriors.png",
@@ -249,27 +249,27 @@ ggsave("outputs/figures/supplementary_figures/pop_posteriors.png",
 
 # Prior values are set in retrieve_stan_data() function by the call to
 # set_prior_values(). We re-run the model for the full Delta, BA.2 and XBB
-# datasets here and plot the results after increasing the individual-level 
+# datasets here and plot the results after increasing the individual-level
 # variation parameters
 
-# Getting data ready for Stan. Less informative priors set using the 
+# Getting data ready for Stan. Less informative priors set using the
 # retrieve_stan_data() function with custom sigma values set
 stan_data_delta_full <- retrieve_stan_data(
   dt_delta_full_stan, time_type = "relative",
-  formula_delta, 
-  prior_sigma_values = c(10, 10, 10, 1, 1, 1), 
+  formula_delta,
+  prior_sigma_values = c(10, 10, 10, 1, 1, 1),
   default_prior_values = FALSE)
 
 stan_data_ba2_full <- retrieve_stan_data(
   dt_ba2_full_stan, time_type = "relative",
-  formula_ba2, 
-  prior_sigma_values = c(10, 10, 10, 1, 1, 1), 
+  formula_ba2,
+  prior_sigma_values = c(10, 10, 10, 1, 1, 1),
   default_prior_values = FALSE)
 
 stan_data_xbb_full <- retrieve_stan_data(
   dt_xbb_full_stan, time_type = "relative",
-  formula_xbb, 
-  prior_sigma_values = c(10, 10, 10, 1, 1, 1), 
+  formula_xbb,
+  prior_sigma_values = c(10, 10, 10, 1, 1, 1),
   default_prior_values = FALSE)
 
 #--- Compiling model
@@ -357,10 +357,10 @@ p_figure_2_less_informative <- build_figure_2(
   alpha_fits_post = 0.5,
   manual_facet_order = c("Delta wave", "BA.2 wave", "XBB wave"),
   plot_beyond = TRUE,
-  plot_data = TRUE) + 
-  scale_colour_manual(values = manual_pal_figure) + 
+  plot_data = TRUE) +
+  scale_colour_manual(values = manual_pal_figure) +
   scale_fill_manual(values = manual_pal_figure) +
-  theme_linedraw() + 
+  theme_linedraw() +
   theme(legend.position = "none",
         text = element_text(size = 8, family = "Helvetica"),
         strip.background =element_rect(fill="white"),
@@ -479,10 +479,10 @@ p_figure_2_higher_ind <- build_figure_2(
   alpha_fits_post = 0.5,
   manual_facet_order = c("Delta wave", "BA.2 wave", "XBB wave"),
   plot_beyond = TRUE,
-  plot_data = TRUE) + 
-  scale_colour_manual(values = manual_pal_figure) + 
+  plot_data = TRUE) +
+  scale_colour_manual(values = manual_pal_figure) +
   scale_fill_manual(values = manual_pal_figure) +
-  theme_linedraw() + 
+  theme_linedraw() +
   theme(legend.position = "none",
         text = element_text(size = 8, family = "Helvetica"),
         strip.background =element_rect(fill="white"),
@@ -549,7 +549,7 @@ dt_xbb_fits_bivalent <- process_fits(
   fit_xbb_bivalent,
   dt_stan = dt_xbb_bivalent_stan,
   stan_data = stan_data_xbb_bivalent,
-  formula_xbb_bivalent, t_max = 150, 
+  formula_xbb_bivalent, t_max = 150,
   cleaned_names = c(
     "Vaccine type", "Titre type"))
 
@@ -565,15 +565,15 @@ dt_fits_bivalent <- dt_xbb_bivalent_stan[
             "BA.5 Abs", "BQ.1.1 Abs", "XBB.1.5 Abs"))]
 
 p_figure_2_bivalent <- dt_xbb_fits_bivalent[
-  , `Vaccine type` := fct_relevel(`Vaccine type`, "Monovalent")] |> 
-  ggplot() + 
-  geom_line(aes(x = t, y = me, colour = `Vaccine type`)) + 
+  , `Vaccine type` := fct_relevel(`Vaccine type`, "Monovalent")] |>
+  ggplot() +
+  geom_line(aes(x = t, y = me, colour = `Vaccine type`)) +
   geom_ribbon(aes(
-    x = t, ymin = lo, ymax = hi, fill = `Vaccine type`), 
-    alpha = 0.3) +     
-  geom_hline(aes(yintercept = 40), 
+    x = t, ymin = lo, ymax = hi, fill = `Vaccine type`),
+    alpha = 0.3) +
+  geom_hline(aes(yintercept = 40),
             linetype = "dotdash", colour = "gray30", alpha = 0.4) +
-  geom_hline(aes(yintercept = 2560), 
+  geom_hline(aes(yintercept = 2560),
             linetype = "dotdash", colour = "gray30", alpha = 0.4) +
   facet_grid( ~ `Titre type`) +
   scale_y_continuous(
@@ -581,10 +581,10 @@ p_figure_2_bivalent <- dt_xbb_fits_bivalent[
     breaks = c(40, 80, 160, 320, 640, 1280,
                2560, 5120),
     labels = c("40", "80", "160", "320", "640", "1280", "2560", "5120")) +
-  scale_x_continuous(breaks = c(0, 30, 60, 90, 120), 
+  scale_x_continuous(breaks = c(0, 30, 60, 90, 120),
                      labels = c("0", "30", "60", "90", "120"),
-                     expand = c(0,0)) + 
-  coord_cartesian(clip = "off") + 
+                     expand = c(0,0)) +
+  coord_cartesian(clip = "off") +
   labs(x = "Time since last exposure (days)",
        y = expression(paste("Titre (IC"[50], ")")),
        title = "Monovalent vs Bivalent/BA.1 containing vaccines") +
@@ -592,16 +592,16 @@ p_figure_2_bivalent <- dt_xbb_fits_bivalent[
     ggh4x.facet.nestline = element_line(),
     legend.position = "bottom",
     strip.text.x.top = element_text(size = 8, family = "Helvetica"),
-    strip.text.x = element_text(size = 8, family = "Helvetica")) + 
-  theme_linedraw() + 
-  theme(legend.position = "bottom", 
+    strip.text.x = element_text(size = 8, family = "Helvetica")) +
+  theme_linedraw() +
+  theme(legend.position = "bottom",
         text = element_text(size = 9, family = "Helvetica"),
         strip.placement = "outside",
         plot.title = element_text(face = "plain", size = 9),
-        legend.box = "vertical", 
+        legend.box = "vertical",
         legend.margin = margin(),
         strip.background = element_rect(fill="white"),
-        strip.text = element_text(colour = 'black')) 
+        strip.text = element_text(colour = 'black'))
 
 # Saving figure
 ggsave("outputs/figures/supplementary_figures/monovalent_vs_bivalent_figure_2.png",
@@ -616,8 +616,8 @@ ggsave("outputs/figures/supplementary_figures/monovalent_vs_bivalent_figure_2.pn
 
 dt_pop_params_xbb_bivalent <- figure_3_data(
   fit_xbb_bivalent, dt_xbb_bivalent_stan,
-  stan_data_xbb_bivalent, formula_xbb_bivalent, 
-  wave_manual = "XBB wave", 
+  stan_data_xbb_bivalent, formula_xbb_bivalent,
+  wave_manual = "XBB wave",
   cleaned_names = c("Vaccine type", "Titre type"))
 
 dt_figure_3_bivalent <- dt_pop_params_xbb_bivalent[
@@ -639,7 +639,7 @@ dt_figure_3_bivalent[
 dt_figure_3_bivalent_point <- dt_figure_3_bivalent[, .(
   `Vaccine type`, `Titre type`,
   rel_drop_me, mu_p_me, mu_s_me)][
-    order(`Vaccine type`)] |> 
+    order(`Vaccine type`)] |>
   unique()
 
 manual_pal_figure <-
@@ -652,7 +652,7 @@ manual_pal_figure <-
     "#D95F02",
     "#66A61E")
 
-p_figure_3_bivalent <- dt_figure_3_bivalent |> 
+p_figure_3_bivalent <- dt_figure_3_bivalent |>
   ggplot(aes(
     x = mu_p, y = mu_s,
     colour = `Vaccine type`)) +
@@ -661,10 +661,10 @@ p_figure_3_bivalent <- dt_figure_3_bivalent |>
       group = interaction(
         `Vaccine type`,
         `Titre type`))) +
-  geom_point(data = dt_figure_3_bivalent[.draw <= 2000], 
+  geom_point(data = dt_figure_3_bivalent[.draw <= 2000],
              alpha = 0.05, size = 0.2) +
   geom_point(data = dt_figure_3_bivalent_point,
-             aes(x = mu_p_me, y = mu_s_me, 
+             aes(x = mu_p_me, y = mu_s_me,
                  shape = `Titre type`),
              colour = "black") +
   geom_path(data = dt_figure_3_bivalent_point,
@@ -678,30 +678,30 @@ p_figure_3_bivalent <- dt_figure_3_bivalent |>
     breaks = c(40, 80, 160, 320, 640, 1280, 2560),
     labels = c(expression(" "<= 40),
                "80", "160", "320", "640", "1280", "2560"),
-    limits = c(NA, 10240)) + 
+    limits = c(NA, 10240)) +
   # geom_hline(yintercept = 40, linetype = "twodash", colour = "gray30") +
   geom_hline(yintercept = 2560, linetype = "twodash", colour = "gray30") +
   scale_y_continuous(
     trans = "log2",
     breaks = c(40, 80, 160, 320, 640, 1280, 2560),
     labels = c(expression(" "<= 40),
-               "80", "160", "320", "640", "1280", "2560")) + 
+               "80", "160", "320", "640", "1280", "2560")) +
   # facet_nested(~, scales = "fixed") +
   theme_linedraw() +
-  theme(legend.position = "bottom", 
+  theme(legend.position = "bottom",
         text = element_text(size = 9, family = "Helvetica"),
         strip.placement = "outside",
         plot.title = element_text(face = "plain", size = 9),
-        legend.box = "vertical", 
+        legend.box = "vertical",
         legend.margin = margin(),
         strip.background = element_rect(fill="white"),
         strip.text = element_text(colour = 'black')) +
-  scale_shape_manual(values = c(1, 2, 3)) + 
+  scale_shape_manual(values = c(1, 2, 3)) +
   labs(x = expression(paste("Population-level titre value at peak (IC"[50], ")")),
        y = expression(paste("Population-level titre value at set-point (IC"[50], ")")),
-       title = "Monovalent vs Bivalent/BA.1 containing vaccines") + 
+       title = "Monovalent vs Bivalent/BA.1 containing vaccines") +
   # scale_colour_manual(values = manual_pal_figure) +
-  guides(colour = guide_legend(override.aes = list(alpha = 1, size = 1))) 
+  guides(colour = guide_legend(override.aes = list(alpha = 1, size = 1)))
 
 ggsave("outputs/figures/supplementary_figures/monovalent_vs_bivalent_figure_3.png",
        p_figure_3_bivalent,
@@ -757,7 +757,7 @@ dt_delta_vax_type_fits <- process_fits(
   fit_delta_vax_type,
   dt_stan = dt_delta_vax_type_stan,
   stan_data = stan_data_delta_vax_type,
-  formula_delta_vax_type, t_max = 150, 
+  formula_delta_vax_type, t_max = 150,
   cleaned_names = c(
     "Vaccine type", "Titre type"))
 
@@ -767,15 +767,15 @@ dt_delta_vax_type_fits <- dt_delta_vax_type_fits[
         , `Titre type` := fct_relevel(`Titre type`, c(
           "Ancestral Abs", "Alpha Abs", "Delta Abs"))]
 
-p_figure_2_delta_vax_type <- dt_delta_vax_type_fits |> 
-  ggplot() + 
-  geom_line(aes(x = t, y = me, colour = `Vaccine type`)) + 
+p_figure_2_delta_vax_type <- dt_delta_vax_type_fits |>
+  ggplot() +
+  geom_line(aes(x = t, y = me, colour = `Vaccine type`)) +
   geom_ribbon(aes(
-    x = t, ymin = lo, ymax = hi, fill = `Vaccine type`), 
-    alpha = 0.3) +     
-  geom_hline(aes(yintercept = 40), 
+    x = t, ymin = lo, ymax = hi, fill = `Vaccine type`),
+    alpha = 0.3) +
+  geom_hline(aes(yintercept = 40),
              linetype = "dotdash", colour = "gray30", alpha = 0.4) +
-  geom_hline(aes(yintercept = 2560), 
+  geom_hline(aes(yintercept = 2560),
              linetype = "dotdash", colour = "gray30", alpha = 0.4) +
   facet_grid( ~ `Titre type`) +
   scale_y_continuous(
@@ -783,10 +783,10 @@ p_figure_2_delta_vax_type <- dt_delta_vax_type_fits |>
     breaks = c(40, 80, 160, 320, 640, 1280,
                2560, 5120),
     labels = c("40", "80", "160", "320", "640", "1280", "2560", "5120")) +
-  scale_x_continuous(breaks = c(0, 30, 60, 90, 120), 
+  scale_x_continuous(breaks = c(0, 30, 60, 90, 120),
                      labels = c("0", "30", "60", "90", "120"),
-                     expand = c(0,0)) + 
-  coord_cartesian(clip = "off") + 
+                     expand = c(0,0)) +
+  coord_cartesian(clip = "off") +
   labs(x = "Time since last exposure (days)",
        y = expression(paste("Titre (IC"[50], ")")),
        title = "AZD1222 vs BNT162b2 during Delta wave") +
@@ -794,16 +794,16 @@ p_figure_2_delta_vax_type <- dt_delta_vax_type_fits |>
     ggh4x.facet.nestline = element_line(),
     legend.position = "bottom",
     strip.text.x.top = element_text(size = 8, family = "Helvetica"),
-    strip.text.x = element_text(size = 8, family = "Helvetica")) + 
-  theme_linedraw() + 
-  theme(legend.position = "bottom", 
+    strip.text.x = element_text(size = 8, family = "Helvetica")) +
+  theme_linedraw() +
+  theme(legend.position = "bottom",
         text = element_text(size = 9, family = "Helvetica"),
         strip.placement = "outside",
         plot.title = element_text(face = "plain", size = 9),
-        legend.box = "vertical", 
+        legend.box = "vertical",
         legend.margin = margin(),
         strip.background = element_rect(fill="white"),
-        strip.text = element_text(colour = 'black')) 
+        strip.text = element_text(colour = 'black'))
 
 ggsave("outputs/figures/supplementary_figures/delta_vax_type_figure_2.png",
        p_figure_2_delta_vax_type,
@@ -817,8 +817,8 @@ ggsave("outputs/figures/supplementary_figures/delta_vax_type_figure_2.png",
 
 dt_pop_params_delta_vax_type <- figure_3_data(
   fit_delta_vax_type, dt_delta_vax_type,
-  stan_data_delta_vax_type, formula_delta_vax_type, 
-  wave_manual = "Delta wave", 
+  stan_data_delta_vax_type, formula_delta_vax_type,
+  wave_manual = "Delta wave",
   cleaned_names = c("Vaccine type", "Titre type"))
 
 dt_figure_3_vax_type <- dt_pop_params_delta_vax_type[
@@ -841,10 +841,10 @@ dt_figure_3_vax_type[
 dt_figure_3_vax_type_points <- dt_figure_3_vax_type[, .(
   `Vaccine type`, `Titre type`,
   rel_drop_me, mu_p_me, mu_s_me)][
-    order(`Vaccine type`)] |> 
+    order(`Vaccine type`)] |>
   unique()
 
-p_figure_3_delta_vax_type <- dt_figure_3_vax_type |> 
+p_figure_3_delta_vax_type <- dt_figure_3_vax_type |>
   ggplot(aes(
     x = mu_p, y = mu_s,
     colour = `Vaccine type`)) +
@@ -853,10 +853,10 @@ p_figure_3_delta_vax_type <- dt_figure_3_vax_type |>
       group = interaction(
         `Vaccine type`,
         `Titre type`))) +
-  geom_point(data = dt_figure_3_vax_type[.draw <= 2000], 
+  geom_point(data = dt_figure_3_vax_type[.draw <= 2000],
              alpha = 0.05, size = 0.2) +
   geom_point(data = dt_figure_3_vax_type_points,
-             aes(x = mu_p_me, y = mu_s_me, 
+             aes(x = mu_p_me, y = mu_s_me,
                  shape = `Titre type`),
              colour = "black") +
   geom_path(data = dt_figure_3_vax_type_points,
@@ -869,30 +869,30 @@ p_figure_3_delta_vax_type <- dt_figure_3_vax_type |>
     trans = "log2",
     breaks = c(40, 80, 160, 320, 640, 1280, 2560),
     labels = c(expression(" "<= 40),
-               "80", "160", "320", "640", "1280", "2560")) + 
+               "80", "160", "320", "640", "1280", "2560")) +
   # geom_hline(yintercept = 40, linetype = "twodash", colour = "gray30") +
   geom_hline(yintercept = 2560, linetype = "twodash", colour = "gray30") +
   scale_y_continuous(
     trans = "log2",
     breaks = c(40, 80, 160, 320, 640, 1280, 2560),
     labels = c(expression(" "<= 40),
-               "80", "160", "320", "640", "1280", "2560")) + 
+               "80", "160", "320", "640", "1280", "2560")) +
   # facet_nested(~, scales = "fixed") +
   theme_linedraw() +
-  theme(legend.position = "bottom", 
+  theme(legend.position = "bottom",
         text = element_text(size = 9, family = "Helvetica"),
         strip.placement = "outside",
         plot.title = element_text(face = "plain", size = 9),
-        legend.box = "vertical", 
+        legend.box = "vertical",
         legend.margin = margin(),
         strip.background = element_rect(fill="white"),
         strip.text = element_text(colour = 'black')) +
-  scale_shape_manual(values = c(1, 2, 3)) + 
+  scale_shape_manual(values = c(1, 2, 3)) +
   labs(x = expression(paste("Population-level titre value at peak (IC"[50], ")")),
        y = expression(paste("Population-level titre value at set-point (IC"[50], ")")),
-       title = "AZD1222 vs BNT162b2 during Delta wave") + 
+       title = "AZD1222 vs BNT162b2 during Delta wave") +
   # scale_colour_manual(values = manual_pal_figure) +
-  guides(colour = guide_legend(override.aes = list(alpha = 1, size = 1))) 
+  guides(colour = guide_legend(override.aes = list(alpha = 1, size = 1)))
 
 ggsave("outputs/figures/supplementary_figures/delta_vax_type_figure_3.png",
        p_figure_3_delta_vax_type,
@@ -908,52 +908,52 @@ ggsave("outputs/figures/supplementary_figures/delta_vax_type_figure_3.png",
 # dt_pop_posterior_all_plot <- dt_pop_posterior_all[, Wave := fct_relevel(Wave, "Delta wave")][
 #   , `Infection history` := fct_relevel(
 #     `Infection history`, c("Infection naive", "Previously infected (Pre-Omicron)"))]
-# 
+#
 # dt_pop_priors <- sample_pop_priors(n_samples = 4000)
 # dt_pop_priors[, `Titre type` := "Prior"]
 # setnames(dt_pop_priors, "sample_id", ".draw")
-# 
+#
 # dt_pop_priors_long <- melt(dt_pop_priors, id.vars = c(".draw", "Titre type"))
-# 
+#
 # dt_pop_priors_long[variable == "t0", variable := "Initial titre"]
 # dt_pop_priors_long[variable == "tp", variable := "Time of peak"]
 # dt_pop_priors_long[variable == "ts", variable := "Time of set point"]
 # dt_pop_priors_long[variable == "m1", variable := "Boost gradient"]
 # dt_pop_priors_long[variable == "m2", variable := "1st wane gradient"]
 # dt_pop_priors_long[variable == "m3", variable := "2nd wane gradient"]
-# 
+#
 # dt_pop_priors_long[variable == "beta_t0", variable := "T0 effect size"]
 # dt_pop_priors_long[variable == "beta_tp", variable := "tp effect size"]
 # dt_pop_priors_long[variable == "beta_ts", variable := "ts effect size"]
 # dt_pop_priors_long[variable == "beta_m1", variable := "m1 effect size"]
 # dt_pop_priors_long[variable == "beta_m2", variable := "m2 effect size"]
 # dt_pop_priors_long[variable == "beta_m3", variable := "m3 effect size"]
-# 
+#
 # # Add "Prior" as the Titre type for all priors
 # dt_pop_priors_long[, `Titre type` := "Prior"]
-# 
+#
 # # Get the unique combinations of Infection history and variable from the posterior data
 # unique_combinations <- unique(dt_pop_posterior_all_plot[, .(`Infection history`, variable, Wave)])
-# 
+#
 # # Cross join unique combinations with priors
 # cross_joined <- unique_combinations[dt_pop_priors_long, on = "variable", allow.cartesian = TRUE]
-# 
+#
 # # Now, rbind this with the original posteriors data.table, the rows will align based on the repeated priors for each Infection history and variable
 # combined_dt <- rbind(dt_pop_posterior_all_plot, cross_joined)
-# 
-# ggplot() + 
+#
+# ggplot() +
 #   geom_density_ridges(
-#     data = combined_dt, 
-#     aes(x = value, y = factor(`Titre type`), 
+#     data = combined_dt,
+#     aes(x = value, y = factor(`Titre type`),
 #         fill = factor(`Titre type`),
-#         group = interaction(`Titre type`))) + 
+#         group = interaction(`Titre type`))) +
 #   facet_nested(`Infection history` ~ variable , scales = "free") +
 #   scale_fill_manual(values = c(manual_pal_figure, "grey30")) +
-#   theme_linedraw() + 
+#   theme_linedraw() +
 #   theme(legend.position = "none",
 #         text = element_text(size = 8, family = "Helvetica"),
 #         strip.background =element_rect(fill="white"),
 #         strip.text = element_text(colour = 'black'),
 #         strip.placement = "outside",
-#         plot.title = element_text(face = "bold", size = 9)) + 
+#         plot.title = element_text(face = "bold", size = 9)) +
 #   labs(x = "Value", y = "Titre type")

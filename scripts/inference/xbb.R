@@ -10,7 +10,7 @@ formula_xbb <- ~ 0 + infection_history
 # Defining pre-wave/post-vaccine dates
 date_xbb <- ymd("2023-01-09")
 
-# Setting most relevant titre types for each wave 
+# Setting most relevant titre types for each wave
 titre_types_xbb <- c("BA.5", "BQ.1.1", "XBB")
 
 # Setting most relevant exposure types for each wave
@@ -21,10 +21,10 @@ exp_types_xbb <- c("")
 dt_xbb_data_full <- extract_wave_data(
   dt_in = dt_clean,
   date_set = date_xbb,
-  t_max = 150, 
+  t_max = 150,
   covariate_formula = formula_xbb,
   titre_types = titre_types_xbb,
-  exposure_types = exp_types_xbb, 
+  exposure_types = exp_types_xbb,
   truncate_at_date = FALSE,
   time_threshold = 50,
   titre_threshold = 1)
@@ -62,7 +62,7 @@ stan_data_xbb_trunc <- retrieve_stan_data(
 #   include_paths = "stan",
 #   stanc_options = list("O1"),
 #   cpp_options = list(stan_threads = TRUE))
-# 
+#
 # # Fitting model to real-time data
 # fit_xbb_trunc <- mod$sample(
 #   data = stan_data_xbb_trunc,
@@ -71,7 +71,7 @@ stan_data_xbb_trunc <- retrieve_stan_data(
 #   iter_warmup = 1000,
 #   iter_sampling = 2000,
 #   threads_per_chain = 4)
-# 
+#
 # # Fitting model to full data
 # fit_xbb_full <- mod$sample(
 #   data = stan_data_xbb_full,
@@ -80,7 +80,7 @@ stan_data_xbb_trunc <- retrieve_stan_data(
 #   iter_warmup = 1000,
 #   iter_sampling = 2000,
 #   threads_per_chain = 4)
-# # 
+# #
 # # # Saving fits
 # fit_xbb_trunc$save_object("outputs/fits/xbb_trunc.rds")
 # fit_xbb_full$save_object("outputs/fits/xbb_full.rds")

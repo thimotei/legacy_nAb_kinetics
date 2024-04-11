@@ -46,9 +46,9 @@ dt_comorbidity <- dt_raw[
 # Merging extra covariates with data we fit to
 dt_comorbidity_trim <- merge(
   dt_all_data_table[, .(
-    id = factor(data_id), date, Wave, titre_type)], 
-  dt_comorbidity, 
-  all.x = TRUE, 
+    id = factor(id), date, Wave, titre_type)],
+  dt_comorbidity,
+  all.x = TRUE,
   by = c("id", "date"))
 
 #------------------------#
@@ -68,7 +68,7 @@ dt_comorbidity_trim[, .(exposures = uniqueN(id)),
 
 # Total number of observations (n)
 dt_all_data_table[
-  , .(obs = uniqueN(date)), by = data_id][
+  , .(obs = uniqueN(date)), by = id][
     , sum(obs)]
 
 # Total numbers of observations by wave
@@ -80,17 +80,17 @@ dt_obs <- dt_all_data_table[
 print(dt_obs)
 
 # Types of vaccine
-dt_vax_totals <- dt_all_data_table[, .(N = uniqueN(data_id)),
+dt_vax_totals <- dt_all_data_table[, .(N = uniqueN(id)),
   by = .(last_vax_type, Wave, titre_type)]
 
-dt_exp_totals <- dt_all_data_table[, .(total = uniqueN(data_id)), by = .(titre_type, Wave)]
+dt_exp_totals <- dt_all_data_table[, .(total = uniqueN(id)), by = .(titre_type, Wave)]
 
 dt_vax_totals <- merge(dt_vax_totals, dt_exp_totals, by = c("Wave", "titre_type"))
 
 dt_vax_totals[order(
-  fct_relevel(Wave, "Delta"), 
+  fct_relevel(Wave, "Delta"),
   fct_relevel(
-    titre_type, 
+    titre_type,
     "Ancestral", "Alpha", "Delta",
     "BA.1", "BA.2", "BA.5", "BQ.1.1", "XBB")),
   .(last_vax_type, N, percentage = signif(N/total * 100, 3)), by = c("Wave", "titre_type")]
@@ -103,7 +103,7 @@ dt_age <- dt_comorbidity_trim[
       iqr = signif(IQR(age, na.rm = TRUE), 2)),
       by = Wave]
 
-dt_all_data_table[, uniqueN(data_id)]
+dt_all_data_table[, uniqueN(id)]
 
 dt_age[, lo := mean - iqr]
 dt_age[, hi := mean + iqr]
@@ -137,17 +137,17 @@ fit_exp <- readRDS("outputs/fits/exposures_new_red.rds")
 
 # Extracting parameters
 dt_params <- extract_parameters_pop_clean(
-  fit_exp, 
+  fit_exp,
   dt_data = dt_exp_data,
-  dt_data_stan = dt_exp_stan, 
-  stan_data = stan_data_exp, 
+  dt_data_stan = dt_exp_stan,
+  stan_data = stan_data_exp,
   formula = formula_exp,
   cleaned_names = c("Exposure number", "Titre type"))
 
 dt_params[variable %in% c("tp_pop", "ts_pop"),
           .(me = signif(quantile(value, 0.5), 3),
             lo = signif(quantile(value, 0.025), 3),
-            hi = signif(quantile(value, 0.975), 3)), 
+            hi = signif(quantile(value, 0.975), 3)),
           by = .(variable)]
 
 
@@ -160,17 +160,17 @@ fit_exp <- readRDS("outputs/fits/exposures_new_red.rds")
 
 # Extracting parameters
 dt_params <- extract_parameters_pop_clean(
-  fit_exp, 
+  fit_exp,
   dt_data = dt_exp_data,
-  dt_data_stan = dt_exp_stan, 
-  stan_data = stan_data_exp, 
+  dt_data_stan = dt_exp_stan,
+  stan_data = stan_data_exp,
   formula = formula_exp,
   cleaned_names = c("Exposure number", "Titre type"))
 
 dt_params[variable %in% c("tp_pop", "ts_pop"),
           .(me = signif(quantile(value, 0.5), 3),
             lo = signif(quantile(value, 0.025), 3),
-            hi = signif(quantile(value, 0.975), 3)), 
+            hi = signif(quantile(value, 0.975), 3)),
           by = .(variable)]
 
 dt_params[`Exposure number` %in% c(2, 3, 4, 5, 6) &
@@ -178,7 +178,7 @@ dt_params[`Exposure number` %in% c(2, 3, 4, 5, 6) &
             `Titre type` %in% c("Alpha"),
           .(me = signif(quantile(value, 0.5), 3),
             lo = signif(quantile(value, 0.025), 3),
-            hi = signif(quantile(value, 0.975), 3)), 
+            hi = signif(quantile(value, 0.975), 3)),
           by = .(variable)]
 
 dt_params[`Exposure number` %in% c(2, 3, 4, 5, 6) &
@@ -186,7 +186,7 @@ dt_params[`Exposure number` %in% c(2, 3, 4, 5, 6) &
             `Titre type` %in% c("Delta"),
           .(me = signif(quantile(value, 0.5), 3),
             lo = signif(quantile(value, 0.025), 3),
-            hi = signif(quantile(value, 0.975), 3)), 
+            hi = signif(quantile(value, 0.975), 3)),
           by = .(variable)]
 
 dt_params[`Exposure number` %in% c(2, 3, 4, 5, 6) &
@@ -194,7 +194,7 @@ dt_params[`Exposure number` %in% c(2, 3, 4, 5, 6) &
             `Titre type` %in% c("XBB"),
           .(me = signif(quantile(value, 0.5), 3),
             lo = signif(quantile(value, 0.025), 3),
-            hi = signif(quantile(value, 0.975), 3)), 
+            hi = signif(quantile(value, 0.975), 3)),
           by = .(variable)]
 
 #------------------------------------------------------#
@@ -207,7 +207,7 @@ dt_peak_diff_1 <- dt_params[
     `Titre type` %in% c("Alpha", "Delta")]
 
 dt_peak_diff_1_wide <- dcast(
-  dt_peak_diff_1, 
+  dt_peak_diff_1,
   `Exposure number` + .draw ~ `Titre type`,
   value.var = "value")
 
@@ -224,7 +224,7 @@ dt_peak_diff_2 <- dt_params[
     `Titre type` %in% c("Delta", "XBB")]
 
 dt_peak_diff_2_wide <- dcast(
-  dt_peak_diff_2, 
+  dt_peak_diff_2,
   `Exposure number` + .draw ~ `Titre type`,
   value.var = "value")
 
@@ -245,7 +245,7 @@ dt_params[`Exposure number` %in% c(2, 3, 4, 5, 6) &
             `Titre type` %in% c("Ancestral"),
           .(me = signif(quantile(value, 0.5), 3),
             lo = signif(quantile(value, 0.025), 3),
-            hi = signif(quantile(value, 0.975), 3)), 
+            hi = signif(quantile(value, 0.975), 3)),
           by = .(variable)]
 
 dt_params[`Exposure number` %in% c(2, 3, 4, 5, 6) &
@@ -253,7 +253,7 @@ dt_params[`Exposure number` %in% c(2, 3, 4, 5, 6) &
             `Titre type` %in% c("BA.2"),
           .(me = signif(quantile(value, 0.5), 3),
             lo = signif(quantile(value, 0.025), 3),
-            hi = signif(quantile(value, 0.975), 3)), 
+            hi = signif(quantile(value, 0.975), 3)),
           by = .(variable)]
 
 dt_params[`Exposure number` %in% c(2, 3, 4, 5, 6) &
@@ -261,7 +261,7 @@ dt_params[`Exposure number` %in% c(2, 3, 4, 5, 6) &
             `Titre type` %in% c("XBB"),
           .(me = signif(quantile(value, 0.5), 3),
             lo = signif(quantile(value, 0.025), 3),
-            hi = signif(quantile(value, 0.975), 3)), 
+            hi = signif(quantile(value, 0.975), 3)),
           by = .(variable)]
 
 
@@ -275,7 +275,7 @@ dt_setpoint_diff_1 <- dt_params[
     `Titre type` %in% c("Ancestral", "Alpha")]
 
 dt_setpoint_diff_1_wide <- dcast(
-  dt_setpoint_diff_1, 
+  dt_setpoint_diff_1,
   `Exposure number` + .draw ~ `Titre type`,
   value.var = "value")
 
@@ -292,7 +292,7 @@ dt_setpoint_diff_2 <- dt_params[
     `Titre type` %in% c("BA.2", "XBB")]
 
 dt_setpoint_diff_2_wide <- dcast(
-  dt_setpoint_diff_2, 
+  dt_setpoint_diff_2,
   `Exposure number` + .draw ~ `Titre type`,
   value.var = "value")
 

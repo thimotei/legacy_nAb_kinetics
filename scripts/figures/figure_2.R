@@ -41,7 +41,7 @@ dt_xbb_plot_trunc <- process_fits(
 
 dt_delta_plot_full <- process_fits(
   fit_delta_full, dt_delta_data_full, stan_data_delta_full,
-  formula_delta, t_max = 150, 
+  formula_delta, t_max = 150,
   cleaned_names = c("Infection history", "Titre type"))
 
 dt_ba2_plot_full <- process_fits(
@@ -60,10 +60,10 @@ dt_all_data_plot <- rbind(
     last_exp_type %in% c("BNT162b2", "AZD1222")],
   dt_ba2_data_full[, Wave := "BA.2 wave"],
   dt_xbb_data_full[, Wave := "XBB wave"])[
-    , Wave := factor(Wave)] |> 
+    , Wave := factor(Wave)] |>
   clean_covariate_names(
-    formula_val = formula_delta, 
-    cleaned_names = c("Infection history", "Titre type")) |> 
+    formula_val = formula_delta,
+    cleaned_names = c("Infection history", "Titre type")) |>
   convert_log_scale_inverse(vars_to_transform = "titre")
 
 dt_all_data_plot[`Titre type` == "XBB", `Titre type` := "XBB.1.5"][
@@ -84,7 +84,7 @@ dt_all_fits_trunc <- rbind(
     , `Titre type` := fct_relevel(`Titre type`, c(
       "Ancestral Abs", "Alpha Abs", "Delta Abs",
       "BA.1 Abs", "BA.2 Abs",
-      "BA.5 Abs", "BQ.1.1 Abs", "XBB.1.5 Abs"))] 
+      "BA.5 Abs", "BQ.1.1 Abs", "XBB.1.5 Abs"))]
 
 dt_all_fits_full <- rbind(
   dt_delta_plot_full[, Wave := "Delta wave"],
@@ -125,19 +125,19 @@ dt_xbb_data_trunc[, .(
 dt_all_data_plot_main <- dt_all_data_plot[
   `Infection history` != "Previously infected (Omicron)"][
     , `Infection history` := fct_relevel(fct_drop(
-      `Infection history`), 
+      `Infection history`),
       c("Infection naive", "Previously infected (Pre-Omicron)"))] |> unique()
 
 dt_all_fits_trunc_main <- dt_all_fits_trunc[
   `Infection history` != "Previously infected (Omicron)"][
     , `Infection history` := fct_relevel(fct_drop(
-      `Infection history`), 
+      `Infection history`),
       c("Infection naive", "Previously infected (Pre-Omicron)"))] |> unique()
 
 dt_all_fits_full_main <- dt_all_fits_full[
   `Infection history` != "Previously infected (Omicron)"][
     , `Infection history` := fct_relevel(fct_drop(
-      `Infection history`), 
+      `Infection history`),
       c("Infection naive", "Previously infected (Pre-Omicron)"))] |> unique()
 
 dt_emergence <- data.table(
@@ -180,17 +180,17 @@ p_figure_2_a <- build_figure_2(
   alpha_fits_post = 0.15,
   manual_facet_order = c("Delta wave", "BA.2 wave", "XBB wave"),
   plot_beyond = TRUE,
-  plot_data = TRUE) + 
-  scale_colour_manual(values = manual_pal_figure) + 
+  plot_data = TRUE) +
+  scale_colour_manual(values = manual_pal_figure) +
   scale_fill_manual(values = manual_pal_figure) +
-  theme_linedraw() + 
+  theme_linedraw() +
   theme(legend.position = "none",
         text = element_text(size = 8, family = "Helvetica"),
         strip.background =element_rect(fill="white"),
         strip.text = element_text(colour = 'black'),
         strip.placement = "outside",
-        plot.title = element_text(face = "bold", size = 9)) + 
-  labs(tag = "A", title = "Population-level fits") 
+        plot.title = element_text(face = "bold", size = 9)) +
+  labs(tag = "A", title = "Population-level fits")
 
 #---------------#
 #--- Panel B ---#
@@ -199,12 +199,12 @@ p_figure_2_a <- build_figure_2(
 # Delta fits
 dt_ind_traj_sum_delta <- simulate_and_sum_ind(
   fit_delta_full, dt_delta_full_stan,
-  n_draws = 500, wave_manual = "Delta Wave", 
-  scale = "log", adjust_dates = FALSE, 
+  n_draws = 500, wave_manual = "Delta Wave",
+  scale = "log", adjust_dates = FALSE,
   time_shift = 0, t_max = 150, formula_delta)
 
 dt_delta_full_stan_plot <- convert_log_scale_inverse(
-  copy(dt_delta_full_stan), vars_to_transform = "titre") |> 
+  copy(dt_delta_full_stan), vars_to_transform = "titre") |>
   clean_covariate_names(
     formula_val = formula_delta,
     cleaned_names = c("Infection history", "Titre type"))
@@ -212,12 +212,12 @@ dt_delta_full_stan_plot <- convert_log_scale_inverse(
 # BA.2 fits
 dt_ind_traj_sum_ba2 <- simulate_and_sum_ind(
   fit_ba2_full, dt_ba2_full_stan,
-  n_draws = 500, wave_manual = "BA.2 Wave", 
-  scale = "log", adjust_dates = FALSE, 
+  n_draws = 500, wave_manual = "BA.2 Wave",
+  scale = "log", adjust_dates = FALSE,
   time_shift = 0, t_max = 150, formula_delta)
 
 dt_ba2_full_stan_plot <- convert_log_scale_inverse(
-  copy(dt_ba2_full_stan), vars_to_transform = "titre") |> 
+  copy(dt_ba2_full_stan), vars_to_transform = "titre") |>
   clean_covariate_names(
     formula_val = formula_ba2,
     cleaned_names = c("Infection history", "Titre type"))
@@ -225,12 +225,12 @@ dt_ba2_full_stan_plot <- convert_log_scale_inverse(
 # XBB fits
 dt_ind_traj_sum_xbb <- simulate_and_sum_ind(
   fit_xbb_full, dt_xbb_full_stan,
-  n_draws = 500, wave_manual = "XBB Wave", 
-  scale = "log", adjust_dates = FALSE, 
+  n_draws = 500, wave_manual = "XBB Wave",
+  scale = "log", adjust_dates = FALSE,
   time_shift = 0, t_max = 150, formula_xbb)
 
 dt_xbb_full_stan_plot <- convert_log_scale_inverse(
-  copy(dt_xbb_full_stan), vars_to_transform = "titre") |> 
+  copy(dt_xbb_full_stan), vars_to_transform = "titre") |>
   clean_covariate_names(
     formula_val = formula_xbb,
     cleaned_names = c("Infection history", "Titre type"))
@@ -243,8 +243,8 @@ dt_ind_fits_plot <- rbind(
       `Titre type` == "XBB", `Titre type` := "XBB.1.5"][
         , `Titre type` := paste0(`Titre type`, " Abs")][
           , `Titre type` := fct_relevel(`Titre type`, c(
-            "Ancestral Abs", "Alpha Abs", "Delta Abs", 
-            "BA.1 Abs", "BA.2 Abs", 
+            "Ancestral Abs", "Alpha Abs", "Delta Abs",
+            "BA.1 Abs", "BA.2 Abs",
             "BA.5 Abs", "BQ.1.1 Abs", "XBB.1.5 Abs"))]
 
 dt_ind_data_plot <- rbind(
@@ -255,8 +255,8 @@ dt_ind_data_plot <- rbind(
       `Titre type` == "XBB", `Titre type` := "XBB.1.5"][
         , `Titre type` := paste0(`Titre type`, " Abs")][
           , `Titre type` := fct_relevel(`Titre type`, c(
-            "Ancestral Abs", "Alpha Abs", "Delta Abs", 
-            "BA.1 Abs", "BA.2 Abs", 
+            "Ancestral Abs", "Alpha Abs", "Delta Abs",
+            "BA.1 Abs", "BA.2 Abs",
             "BA.5 Abs", "BQ.1.1 Abs", "XBB.1.5 Abs"))]
 
 # Choosing 4 individuals with exposures in all three waves
@@ -275,13 +275,13 @@ dt_ind_data_plot_subset <- dt_ind_data_plot[
   , plot_id := factor(paste0("Individual ", plot_id))]
 
 # Plotting panel B
-p_ind <- dt_ind_fits_plot_subset |> 
-  ggplot() + 
+p_ind <- dt_ind_fits_plot_subset |>
+  ggplot() +
   geom_line(
-    aes(x = calendar_date, y = me, 
+    aes(x = calendar_date, y = me,
         colour = `Titre type`,
         group = interaction(`Titre type`, Wave)),
-    linetype = "solid") + 
+    linetype = "solid") +
   geom_ribbon(
     aes(x = calendar_date,
         ymin = lo, ymax = hi,
@@ -301,7 +301,7 @@ p_ind <- dt_ind_fits_plot_subset |>
   scale_y_continuous(
     trans = "log2",
     breaks = c(40, 160, 640, 2560),
-    labels = c("40", "160", "640", "2560")) + 
+    labels = c("40", "160", "640", "2560")) +
   # theme_cowplot(font_size = 7, font_family = "Helvetica", line_size = 0.25) +
   theme_linedraw() +
   theme(legend.position = "right",
@@ -309,18 +309,18 @@ p_ind <- dt_ind_fits_plot_subset |>
         strip.background =element_rect(fill="white"),
         strip.text = element_text(colour = 'black'),
         strip.placement = "outside",
-        plot.title = element_text(face = "bold", size = 9)) + 
+        plot.title = element_text(face = "bold", size = 9)) +
   guides(fill = guide_legend(nrow = 2, byrow = TRUE)) +
-  scale_shape_manual(values = c(1, 2, 3)) + 
+  scale_shape_manual(values = c(1, 2, 3)) +
   labs(x = "Date",
        y = expression(paste("Titre value (IC"[50], ")")),
-       tag = "B", 
-       title = "Individual-level fits") + 
+       tag = "B",
+       title = "Individual-level fits") +
   scale_colour_manual(values = manual_pal_figure) +
   scale_fill_manual(values = manual_pal_figure) +
   guides(colour = guide_legend(
     override.aes = list(alpha = 1, size = 1))) +
-  facet_grid(plot_id ~ Wave, scales = "free") 
+  facet_grid(plot_id ~ Wave, scales = "free")
 
 p_figure_2 <- plot_grid(
   p_figure_2_a,
@@ -329,12 +329,12 @@ p_figure_2 <- plot_grid(
   ncol = 1)
 
 ggsave("outputs/figures/figure_2.pdf",
-       p_figure_2, 
+       p_figure_2,
        width = 8.5,
        height = 10)
 
 ggsave("outputs/figures/figure_2.png",
-       p_figure_2, 
+       p_figure_2,
        width = 8.5,
        height = 10,
        bg = "white")

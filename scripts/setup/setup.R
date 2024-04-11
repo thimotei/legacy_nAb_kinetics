@@ -10,7 +10,7 @@ library(stringr)
 library(truncnorm)
 
 # Loading in processed data - using condensed wave data by default
-dt_clean <- readRDS("data/processed_data_condensed.rds")
+dt_clean <- readRDS("data/processed_data.rds")
 
 # Listing all of the functions in the R folder
 r_files <- list.files("R", pattern = "\\.R$", full.names = TRUE)

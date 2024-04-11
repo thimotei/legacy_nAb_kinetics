@@ -10,7 +10,7 @@ formula_ba2 <- ~ 0 + infection_history
 # Defining pre-wave/post-vaccine dates
 date_ba2 <- ymd("2022-01-24")
 
-# Setting most relevant titre types for each wave 
+# Setting most relevant titre types for each wave
 titre_types_ba2 <- c("Delta", "BA.1", "BA.2")
 
 # Setting most relevant exposure types for each wave
@@ -19,12 +19,12 @@ exp_types_ba2 <- c("")
 
 # Extracting wave data
 dt_ba2_data_full <- extract_wave_data(
-  dt_in = dt_clean, 
-  date_set = date_ba2, 
-  t_max = 150, 
+  dt_in = dt_clean,
+  date_set = date_ba2,
+  t_max = 150,
   covariate_formula = formula_ba2,
   titre_types = titre_types_ba2,
-  exposure_types = exp_types_ba2, 
+  exposure_types = exp_types_ba2,
   truncate_at_date = FALSE,
   time_threshold = 50,
   titre_threshold = 1)
@@ -62,7 +62,7 @@ stan_data_ba2_trunc <- retrieve_stan_data(
 #   include_paths = "stan",
 #   stanc_options = list("O1"),
 #   cpp_options = list(stan_threads = TRUE))
-# 
+#
 # Fitting model to real-time data
 # fit_ba2_trunc <- mod$sample(
 #   data = stan_data_ba2_trunc,
@@ -71,7 +71,7 @@ stan_data_ba2_trunc <- retrieve_stan_data(
 #   iter_warmup = 1000,
 #   iter_sampling = 2000,
 #   threads_per_chain = 4)
-# 
+#
 # # Fitting model to full data
 # fit_ba2_full <- mod$sample(
 #   data = stan_data_ba2_full,
@@ -80,7 +80,7 @@ stan_data_ba2_trunc <- retrieve_stan_data(
 #   iter_warmup = 1000,
 #   iter_sampling = 2000,
 #   threads_per_chain = 4)
-# 
+#
 # # # Saving fits
 # fit_ba2_trunc$save_object("outputs/fits/ba2_trunc.rds")
 # fit_ba2_full$save_object("outputs/fits/ba2_full.rds")
