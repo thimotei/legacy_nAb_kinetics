@@ -12,6 +12,9 @@ library(truncnorm)
 # Loading in processed data - using condensed wave data by default
 dt_clean <- readRDS("data/processed_data.rds")
 
+# Reordering the data to make it easier to read
+dt_clean <- dt_clean[order(id, date)]
+
 # Listing all of the functions in the R folder
 r_files <- list.files("R", pattern = "\\.R$", full.names = TRUE)
 
