@@ -1,7 +1,3 @@
-source("scripts/inference/delta.R")
-source("scripts/inference/ba2.R")
-source("scripts/inference/xbb.R")
-
 #--------------------#
 #--- Loading data ---#
 #--------------------#
