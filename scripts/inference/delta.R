@@ -1,5 +1,3 @@
-source("scripts/setup/setup.R")
-
 # Extracting and cleaning wave data for inference -------------------------
 
 # Specifying formula for the subsequent inference
