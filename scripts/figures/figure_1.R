@@ -1,18 +1,3 @@
-library(data.table)
-library(forcats)
-library(ggplot2)
-library(ggsci)
-library(patchwork)
-library(cowplot)
-library(lubridate)
-
-#--- loading data
-source("scripts/inference/delta.R")
-source("scripts/inference/ba2.R")
-source("scripts/inference/xbb.R")
-
-dt_clean <- readRDS("data/processed_data_condensed.rds")
-
 #--- Custom variant order and colour scheme
 
 strainOrder <- c("Ancestral", "D614G", "Alpha", "Beta", "Delta",

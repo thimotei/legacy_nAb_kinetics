@@ -1,9 +1,9 @@
 # Real-time estimation of immunological responses against emerging SARS-CoV-2 variants
 
 This is the codebase for the version of the underlying model, the publicly available version of the dataset and the
-scripts to perform all of the analyses in [this paper]. The codebase is not quite a package as it stands, as it directly accompanys one specific analysis. However, we plan for the development codebase hosted at [this repository](https://github.com/thimotei/legacy_correlates) to be turned into a package, allowing for slightly easier installation.
+scripts to perform all of the analyses. The codebase focuses on scripts to reproduce our specific analysis, but there are plans to develop the key inference framework into a package in future
 
-## Quick summary
+## Overfile of repository
 
 ### Antibody kinetics model code
 The underlying antibody kinetics model is written in [Stan](https://mc-stan.org/). We use [cmdstan](https://mc-stan.org/users/interfaces/cmdstan), called from [R](https://www.r-project.org/) using the [cmdstanr](https://mc-stan.org/cmdstanr/) package. We use [data.table](https://cran.r-project.org/web/packages/data.table/vignettes/datatable-intro.html) for our data manipulation throughout and [ggplot2](https://ggplot2.tidyverse.org/) for all plots. Lastly, for extracting the posterior samples in a user-friendly and simple manner, we ubiquitously use the [tidybayes](https://mjskay.github.io/tidybayes/) package.
@@ -20,13 +20,11 @@ Scripts to reproduce the 4 figures in the main text can be found at `scripts/fig
 
 The workflow to reproduce the results in the main text can be summarised as follows:
 
-0). Process the Legacy data object. The code to do this is available (at `scripts/setup/preprocess_data.R`), but the original data is not. Only the processed data is publicly available. However, the The publicly available dataset includes everything required to run the full inference for the results in both the main text and supplementary material.
+0. Process the Legacy data object. The code used to do this is available (at `scripts/setup/preprocess_data.R`), but the original raw data cannot be made publicly available. However, the processed data is included, and this has everything required to run the full inference for the results in both the main text and supplementary material.
 
-1). Run each of the three inference scripts for the main text. They are all within `scripts/inference`. Speficially, they are `delta.R`, `ba2.R` and `xbb.R`. Each script fits the model twice, once to the full set of data for that wave, and once with just the truncated data, representing the real-time fit. The end of each of these three scripts saves the resulting model fit, at `outputs/fits`. The saved model fit objects are large and are therefore not added to the public repository, meaning that any analysis that uses the fit objects requires the user to refit the model. 
+1. Generate the figures from the main text by running `scripts/figures/generate_figures.R`. At the start, these calls the inference scripts within `scripts/inference`. Specifically, the inference code for the Delta, BA.2 and XBB waves are `delta.R`, `ba2.R` and `xbb.R`. Each script fits the model twice, once to the full set of data for that wave, and once with just the truncated data, representing the real-time fit. The end of each of these three scripts saves the resulting model fit, at `outputs/fits`. The saved model fit objects are large and are therefore included in this public repository, meaning that any analysis that uses the fit objects requires the user to refit the model. 
 
-2). Open one of the scripts in the `scripts/figures` directory to reproduce the results in the main text.
-
-3). For the results in the supplementary material, open the script `scripts/figures/supplement/supplementary_figures.R`. 
+2. For the results in the supplementary material, run the script `scripts/figures/supplement/supplementary_figures.R`. 
 
 ### Required packages 
 

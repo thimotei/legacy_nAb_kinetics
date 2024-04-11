@@ -1,14 +1,3 @@
-library(Rcpp)
-library(parallel)
-
-sourceCpp("cpp/simulate_trajectories.cpp")
-sourceCpp("cpp/convert_log_scale_inverse.cpp")
-
-source("scripts/setup/setup.R")
-source("scripts/inference/delta.R")
-source("scripts/inference/ba2.R")
-source("scripts/inference/xbb.R")
-
 cols_to_keep <- c(
   "stan_id", "date", "titre", "titre_type",
   "last_exp_date", "last_exp_type", "vax_num",
