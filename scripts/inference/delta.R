@@ -1,8 +1,4 @@
-source("scripts/setup/setup.R")
-
-#-------------------------------------------------------#
-#--- Extracting and cleaning wave data for inference ---#
-#-------------------------------------------------------#
+# Extracting and cleaning wave data for inference -------------------------
 
 # Specifying formula for the subsequent inference
 formula_delta <- ~ 0 + infection_history
@@ -55,35 +51,37 @@ stan_data_delta_full <- retrieve_stan_data(
 stan_data_delta_trunc <- retrieve_stan_data(
   dt_delta_trunc_stan, time_type = "relative", formula_delta)
 
-#----------------------------------------------------#
-#--- Running inference - commented out by default ---#
-#----------------------------------------------------#
+# Running inference - only runs if posteriors not yet generated -----------
 
-# Compiling model
-# mod <- cmdstan_model(
-#   "stan/antibody_kinetics_main.stan",
-#   include_paths = "stan",
-#   stanc_options = list("O1"),
-#   cpp_options = list(stan_threads = TRUE))
-#
-# # Fitting the model to the real-time dataset, i.e. truncated at chosen date
-# fit_delta_trunc <- mod$sample(
-#   data = stan_data_delta_trunc,
-#   chains = 4,
-#   parallel_chains = 4,
-#   iter_warmup = 1000,
-#   iter_sampling = 2000,
-#   threads_per_chain = 4)
-#
-# # Fitting the model to the full dataset
-# fit_delta_full <- mod$sample(
-#   data = stan_data_delta_full,
-#   chains = 4,
-#   parallel_chains = 4,
-#   iter_warmup = 1000,
-#   iter_sampling = 2000,
-#   threads_per_chain = 4)
-#
-# # Saving fits
-# fit_delta_trunc$save_object("outputs/fits/delta_trunc.rds")
-# fit_delta_full$save_object("outputs/fits/delta_full.rds")
+if(!file.exists("outputs/fits/delta_trunc.rds")){
+
+  # Compiling model
+  mod <- cmdstan_model(
+    "stan/antibody_kinetics_main.stan",
+    include_paths = "stan",
+    stanc_options = list("O1"),
+    cpp_options = list(stan_threads = TRUE))
+  
+  # Fitting the model to the real-time dataset, i.e. truncated at chosen date
+  fit_delta_trunc <- mod$sample(
+    data = stan_data_delta_trunc,
+    chains = 4,
+    parallel_chains = 4,
+    iter_warmup = 1000,
+    iter_sampling = 2000,
+    threads_per_chain = 4)
+  
+  # Fitting the model to the full dataset
+  fit_delta_full <- mod$sample(
+    data = stan_data_delta_full,
+    chains = 4,
+    parallel_chains = 4,
+    iter_warmup = 1000,
+    iter_sampling = 2000,
+    threads_per_chain = 4)
+  
+  # Saving fits
+  fit_delta_trunc$save_object("outputs/fits/delta_trunc.rds")
+  fit_delta_full$save_object("outputs/fits/delta_full.rds")
+  
+}

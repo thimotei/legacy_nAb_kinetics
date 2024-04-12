@@ -1,15 +1,3 @@
-library(gridExtra)
-
-#--- loading data
-source("scripts/inference/delta.R")
-source("scripts/inference/ba2.R")
-source("scripts/inference/xbb.R")
-
-#--- loading fits
-fit_delta_full <- readRDS("outputs/fits/delta_full.rds")
-fit_ba2_full <- readRDS("outputs/fits/ba2_full.rds")
-fit_xbb_full <- readRDS("outputs/fits/xbb_full.rds")
-
 #--- Processing data 
 dt_pop_params_delta <- figure_3_data(
   fit_delta_full, dt_delta_data_full,

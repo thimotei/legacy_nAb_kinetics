@@ -1,27 +1,6 @@
-library(cowplot)
-library(Rcpp)
-
-# Loading data
-source("scripts/inference/delta.R")
-source("scripts/inference/ba2.R")
-source("scripts/inference/xbb.R")
-
-# Sourcing C++ code
-sourceCpp("cpp/simulate_trajectories.cpp")
-sourceCpp("cpp/convert_log_scale_inverse.cpp")
-
 #---------------#
 #--- Panel A ---#
 #---------------#
-
-# Loading fits
-fit_delta_trunc <- readRDS("outputs/fits/delta_trunc.rds")
-fit_ba2_trunc <- readRDS("outputs/fits/ba2_trunc.rds")
-fit_xbb_trunc <- readRDS("outputs/fits/xbb_trunc.rds")
-
-fit_delta_full <- readRDS("outputs/fits/delta_full.rds")
-fit_ba2_full <- readRDS("outputs/fits/ba2_full.rds")
-fit_xbb_full <- readRDS("outputs/fits/xbb_full.rds")
 
 # Processing fits
 dt_delta_plot_trunc <- process_fits(
