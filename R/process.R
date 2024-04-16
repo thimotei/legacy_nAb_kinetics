@@ -1,8 +1,7 @@
 preprocess_data <- function(
     dt_in, trim_nas = TRUE,
     convert_scale = TRUE,
-    simplify_voc_names = TRUE,
-    range = "both") {
+    simplify_voc_names = TRUE) {
 
   dt_copy <- copy(dt_in)
 
@@ -135,24 +134,7 @@ preprocess_data <- function(
   # Adding the time since the last exposure for each individual
   dt_proc[, t_since_last_exp := as.numeric(date - last_exp_date), by = c("id", "exp_num")]
 
-  if (range == "original") {
-    titre_types <- c("Ancestral", "Alpha", "Delta",
-                     "BA.1", "BA.2", "BA.5",  "BQ.1.1", "XBB")
-  }
-
-  if (range == "extended") {
-    titre_types <- c("Ancestral_ext", "Alpha_ext", "Delta_ext",
-                     "BA.1_ext", "BA.2_ext", "BA.5_ext",
-                     "BQ.1.1_ext", "XBB_ext")
-  }
-
-  if (range == "both") {
-    titre_types <- c("Ancestral", "Alpha", "Delta",
-                     "BA.1", "BA.2", "BA.5",  "BQ.1.1", "XBB",
-                     "Ancestral_ext", "Alpha_ext", "Delta_ext",
-                     "BA.1_ext", "BA.2_ext", "BA.5_ext",
-                     "BQ.1.1_ext", "XBB_ext")
-  }
+  titre_types <- c("Ancestral", "Alpha", "Delta", "BA.1", "BA.2", "BA.5",  "BQ.1.1", "XBB")
 
   # Summarising last exposure in general
   dt_proc[
@@ -179,7 +161,6 @@ preprocess_data <- function(
 
   # Tweaking dodgy titre value - over upper censored limit
   dt_out[!is.na(titre) &
-         Range == "Original" &
          titre > 2560 &
          titre < 5120, titre := 2560]
 
