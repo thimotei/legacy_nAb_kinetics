@@ -21,12 +21,13 @@ set.seed(123)
 
 # Preprocess full data.table
 dt_clean <- preprocess_data(
-  dt_raw, trim_nas = TRUE, convert_scale = TRUE,
-  simplify_voc_names = TRUE, range = "original")
+  dt_raw, trim_nas = TRUE,
+  convert_scale = TRUE,
+  simplify_voc_names = TRUE)
 
 # Removing old voc names after simplification and consolidation
 dt_clean[, voc := NULL]
 
 # However, this processed data file is publicly available
-saveRDS(dt_clean, "data/processed_data.rds")
+saveRDS(dt_clean, "data_raw/processed_data.rds")
 
