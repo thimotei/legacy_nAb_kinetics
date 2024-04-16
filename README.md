@@ -1,7 +1,7 @@
 # Real-time estimation of immunological responses against emerging SARS-CoV-2 variants
 
 This is the codebase for the version of the underlying model, the publicly available version of the dataset and the
-scripts to perform all of the analyses. The codebase focuses on scripts to reproduce our specific analysis, but there are plans to develop the key inference framework into a package in future
+scripts to perform all of the analyses. The codebase focuses on scripts to reproduce our specific analysis, but there are plans to develop the key inference framework into a package.
 
 ## Overfile of repository
 
@@ -22,15 +22,8 @@ The workflow to reproduce the results in the main text can be summarised as foll
 
 0. Process the Legacy data object. The code used to do this is available (at `scripts/setup/preprocess_data.R`), but the original raw data cannot be made publicly available. However, the processed data is included, and this has everything required to run the full inference for the results in both the main text and supplementary material.
 
-1. Generate the figures from the main text by running `scripts/figures/generate_figures.R`. At the start, these calls the inference scripts within `scripts/inference`. Specifically, the inference code for the Delta, BA.2 and XBB waves are `delta.R`, `ba2.R` and `xbb.R`. Each script fits the model twice, once to the full set of data for that wave, and once with just the truncated data, representing the real-time fit. The end of each of these three scripts saves the resulting model fit, at `outputs/fits`. The saved model fit objects are large and are therefore included in this public repository, meaning that any analysis that uses the fit objects requires the user to refit the model. 
+1. Load the six datasets required to run the six different inferences. The six data files can be found in `data/` and have the following format: `wave_trunc/full.rds`. The `trunc/full` refers to whether the dataset is the full dataset, or whether it was truncated at the date of the emergence of the variant in question. 
 
-2. For the results in the supplementary material, run the script `scripts/figures/supplement/supplementary_figures.R`. 
+2. Generate the figures from the main text by running `scripts/figures/generate_figures.R`. At the start, these calls the inference scripts within `scripts/inference`. Specifically, the inference code for the Delta, BA.2 and XBB waves are `delta.R`, `ba2.R` and `xbb.R`. Each script fits the model twice, once to the full set of data for that wave, and once with just the truncated data, representing the real-time fit. The end of each of these three scripts saves the resulting model fit, at `outputs/fits`. The saved model fit objects are large and are therefore included in this public repository, meaning that any analysis that uses the fit objects requires the user to refit the model. Once the inference has run once, the scripts check for the existence of the fit objects and they do not re-run the inference if the scripts are sourced again.
 
-### Required packages 
-
-We use the following packages throughout.
-
-```r
-c("cmdstanr", "data.table", "ggplot2", "lubridate", "forcats", "tidybayes", 
-"stringr", "truncnorm")
-```
+3. For the results in the supplementary material, run the script `scripts/figures/supplement/supplementary_figures.R`. 
