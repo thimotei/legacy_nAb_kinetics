@@ -4,44 +4,42 @@
 
 # Processing fits
 dt_delta_plot_trunc <- process_fits(
-  fit_delta_trunc, dt_delta_data_trunc, stan_data_delta_trunc,
-  formula_delta, t_max = 150,
+  fit_delta_trunc, dt_delta_trunc, stan_data_delta_trunc,
+  covariate_formula, t_max = 150,
   cleaned_names = c("Infection history", "Titre type"))
 
 dt_ba2_plot_trunc <- process_fits(
-  fit_ba2_trunc, dt_ba2_data_trunc, stan_data_ba2_trunc,
-  formula_ba2, t_max = 150,
+  fit_ba2_trunc, dt_ba2_trunc, stan_data_ba2_trunc,
+  covariate_formula, t_max = 150,
   cleaned_names = c("Infection history", "Titre type"))
 
 dt_xbb_plot_trunc <- process_fits(
-  fit_xbb_trunc, dt_xbb_data_trunc, stan_data_xbb_trunc,
-  formula_xbb, t_max = 150,
+  fit_xbb_trunc, dt_xbb_trunc, stan_data_xbb_trunc,
+  covariate_formula, t_max = 150,
   cleaned_names = c("Infection history", "Titre type"))
 
 dt_delta_plot_full <- process_fits(
-  fit_delta_full, dt_delta_data_full, stan_data_delta_full,
-  formula_delta, t_max = 150,
+  fit_delta_full, dt_delta_full, stan_data_delta_full,
+  covariate_formula, t_max = 150,
   cleaned_names = c("Infection history", "Titre type"))
 
 dt_ba2_plot_full <- process_fits(
-  fit_ba2_full, dt_ba2_data_full, stan_data_ba2_full,
-  formula_ba2, t_max = 150,
+  fit_ba2_full, dt_ba2_full, stan_data_ba2_full,
+  covariate_formula, t_max = 150,
   cleaned_names = c("Infection history", "Titre type"))
 
 dt_xbb_plot_full <- process_fits(
-  fit_xbb_full, dt_xbb_data_full, stan_data_xbb_full,
-  formula_xbb, t_max = 150,
+  fit_xbb_full, dt_xbb_full, stan_data_xbb_full,
+  covariate_formula, t_max = 150,
   cleaned_names = c("Infection history", "Titre type"))
 
 dt_all_data_plot <- rbind(
-  dt_delta_data_full[
-    , Wave := "Delta wave"][
-    last_exp_type %in% c("BNT162b2", "AZD1222")],
-  dt_ba2_data_full[, Wave := "BA.2 wave"],
-  dt_xbb_data_full[, Wave := "XBB wave"])[
+  dt_delta_full[, Wave := "Delta wave"],
+  dt_ba2_full[, Wave := "BA.2 wave"],
+  dt_xbb_full[, Wave := "XBB wave"])[
     , Wave := factor(Wave)] |>
   clean_covariate_names(
-    formula_val = formula_delta,
+    formula_val = covariate_formula,
     cleaned_names = c("Infection history", "Titre type")) |>
   convert_log_scale_inverse(vars_to_transform = "titre")
 
@@ -78,29 +76,6 @@ dt_all_fits_full <- rbind(
     "BA.1 Abs", "BA.2 Abs",
     "BA.5 Abs", "BQ.1.1 Abs", "XBB.1.5 Abs"))]
 
-# Calculating the time difference between the variant emergence dates
-# and the last exposures per person
-dt_delta_data_trunc[, .(
-  time_diff = as.numeric(
-    date_delta - min(last_exp_date), units = "days")), by = id][, .(
-      t_diff_lo = quantile(time_diff, 0.25),
-      t_diff_me = mean(time_diff),
-      t_diff_hi = quantile(time_diff, 0.75))]
-
-dt_ba2_data_trunc[, .(
-  time_diff = as.numeric(
-    date_ba2 - min(last_exp_date), units = "days")), by = id][, .(
-      t_diff_lo = quantile(time_diff, 0.25),
-      t_diff_me = mean(time_diff),
-      t_diff_hi = quantile(time_diff, 0.75))]
-
-dt_xbb_data_trunc[, .(
-  time_diff = as.numeric(
-    date_xbb - min(last_exp_date), units = "days")), by = id][, .(
-      t_diff_lo = quantile(time_diff, 0.25),
-      t_diff_me = mean(time_diff),
-      t_diff_hi = quantile(time_diff, 0.75))]
-
 dt_all_data_plot_main <- dt_all_data_plot[
   `Infection history` != "Previously infected (Omicron)"][
     , `Infection history` := fct_relevel(fct_drop(
@@ -133,16 +108,6 @@ dt_dates <- data.table(
 
 facet_formula <- `Infection history` ~ Wave + `Titre type`
 
-manual_pal_figure <-
-  c("#CC6677",
-    "#DDCC77",
-    "#88CCEE",
-    "#882255",
-    "#44AA99",
-    "grey",
-    "#D95F02",
-    "#66A61E")
-
 # Plotting panel A
 p_figure_2_a <- build_figure_2(
   dt_all_data_plot_main,
@@ -160,8 +125,8 @@ p_figure_2_a <- build_figure_2(
   manual_facet_order = c("Delta wave", "BA.2 wave", "XBB wave"),
   plot_beyond = TRUE,
   plot_data = TRUE) +
-  scale_colour_manual(values = manual_pal_figure) +
-  scale_fill_manual(values = manual_pal_figure) +
+  scale_colour_manual(values = manual_pal) +
+  scale_fill_manual(values = manual_pal) +
   theme_linedraw() +
   theme(legend.position = "none",
         text = element_text(size = 8, family = "Helvetica"),
@@ -177,41 +142,41 @@ p_figure_2_a <- build_figure_2(
 
 # Delta fits
 dt_ind_traj_sum_delta <- simulate_and_sum_ind(
-  fit_delta_full, dt_delta_full_stan,
+  fit_delta_full, dt_delta_full,
   n_draws = 500, wave_manual = "Delta Wave",
   scale = "log", adjust_dates = FALSE,
-  time_shift = 0, t_max = 150, formula_delta)
+  time_shift = 0, t_max = 150, covariate_formula)
 
 dt_delta_full_stan_plot <- convert_log_scale_inverse(
-  copy(dt_delta_full_stan), vars_to_transform = "titre") |>
+  copy(dt_delta_full), vars_to_transform = "titre") |>
   clean_covariate_names(
-    formula_val = formula_delta,
+    formula_val = covariate_formula,
     cleaned_names = c("Infection history", "Titre type"))
 
 # BA.2 fits
 dt_ind_traj_sum_ba2 <- simulate_and_sum_ind(
-  fit_ba2_full, dt_ba2_full_stan,
+  fit_ba2_full, dt_ba2_full,
   n_draws = 500, wave_manual = "BA.2 Wave",
   scale = "log", adjust_dates = FALSE,
-  time_shift = 0, t_max = 150, formula_delta)
+  time_shift = 0, t_max = 150, covariate_formula)
 
 dt_ba2_full_stan_plot <- convert_log_scale_inverse(
-  copy(dt_ba2_full_stan), vars_to_transform = "titre") |>
+  copy(dt_ba2_full), vars_to_transform = "titre") |>
   clean_covariate_names(
-    formula_val = formula_ba2,
+    formula_val = covariate_formula,
     cleaned_names = c("Infection history", "Titre type"))
 
 # XBB fits
 dt_ind_traj_sum_xbb <- simulate_and_sum_ind(
-  fit_xbb_full, dt_xbb_full_stan,
+  fit_xbb_full, dt_xbb_full,
   n_draws = 500, wave_manual = "XBB Wave",
   scale = "log", adjust_dates = FALSE,
-  time_shift = 0, t_max = 150, formula_xbb)
+  time_shift = 0, t_max = 150, covariate_formula)
 
 dt_xbb_full_stan_plot <- convert_log_scale_inverse(
-  copy(dt_xbb_full_stan), vars_to_transform = "titre") |>
+  copy(dt_xbb_full), vars_to_transform = "titre") |>
   clean_covariate_names(
-    formula_val = formula_xbb,
+    formula_val = covariate_formula,
     cleaned_names = c("Infection history", "Titre type"))
 
 dt_ind_fits_plot <- rbind(
@@ -295,8 +260,8 @@ p_ind <- dt_ind_fits_plot_subset |>
        y = expression(paste("Titre value (IC"[50], ")")),
        tag = "B",
        title = "Individual-level fits") +
-  scale_colour_manual(values = manual_pal_figure) +
-  scale_fill_manual(values = manual_pal_figure) +
+  scale_colour_manual(values = manual_pal) +
+  scale_fill_manual(values = manual_pal) +
   guides(colour = guide_legend(
     override.aes = list(alpha = 1, size = 1))) +
   facet_grid(plot_id ~ Wave, scales = "free")

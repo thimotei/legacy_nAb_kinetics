@@ -1,20 +1,20 @@
-#--- Processing data 
+#--- Processing data
 dt_pop_params_delta <- figure_3_data(
-  fit_delta_full, dt_delta_data_full,
-  stan_data_delta_full, formula_delta, 
-  wave_manual = "Delta wave", 
+  fit_delta_full, dt_delta_full,
+  stan_data_delta_full, covariate_formula,
+  wave_manual = "Delta wave",
   cleaned_names = c("Infection history", "Titre type"))
 
 dt_pop_params_ba2 <- figure_3_data(
-  fit_ba2_full, dt_ba2_data_full,
-  stan_data_ba2_full, formula_ba2, 
-  wave_manual = "BA.2 wave", 
+  fit_ba2_full, dt_ba2_full,
+  stan_data_ba2_full, covariate_formula,
+  wave_manual = "BA.2 wave",
   cleaned_names = c("Infection history", "Titre type"))
 
 dt_pop_params_xbb <- figure_3_data(
-  fit_xbb_full, dt_xbb_data_full,
-  stan_data_xbb_full, formula_xbb, 
-  wave_manual = "XBB wave", 
+  fit_xbb_full, dt_xbb_full,
+  stan_data_xbb_full, covariate_formula,
+  wave_manual = "XBB wave",
   cleaned_names = c("Infection history", "Titre type"))
 
 dt_figure_3_data <- rbind(
@@ -42,7 +42,7 @@ dt_figure_3_data_plot <- dt_figure_3_data[
 dt_figure_3_data_plot[
   , `Titre type` := fct_relevel(
     `Titre type`, c(
-      "Ancestral", "Alpha", "Delta", 
+      "Ancestral", "Alpha", "Delta",
       "BA.2", "BA.5", "BQ.1.1", "XBB"))][
           `Titre type` == "XBB", `Titre type` := "XBB.1.5"][
             , `Titre type` := paste0(`Titre type`, " Abs")][
@@ -52,28 +52,18 @@ dt_figure_3_data_plot[
                 "BA.5 Abs", "BQ.1.1 Abs", "XBB.1.5 Abs"))]
 
 # Wave = Titre type condition, for simpler plot
-# [Wave == "Delta" & `Titre type` == "Delta" | 
+# [Wave == "Delta" & `Titre type` == "Delta" |
 #  Wave == "BA.2" & `Titre type` == "BA.2" |
 #  Wave == "XBB" & `Titre type` == "XBB"]
 
 dt_figure_3_data_points <- dt_figure_3_data_plot[, .(
   Wave, `Infection history`, `Titre type`,
   rel_drop_me, mu_p_me, mu_s_me)][
-  order(`Infection history`)] |> 
+  order(`Infection history`)] |>
   unique()
 
-manual_pal_figure <-
-  c("#CC6677",
-    "#DDCC77",
-    "#88CCEE",
-    "#882255",
-    "#44AA99",
-    "grey",
-    "#D95F02",
-    "#66A61E")
-
 #--- Panel A
-p_figure_3 <- dt_figure_3_data_plot |> 
+p_figure_3 <- dt_figure_3_data_plot |>
   ggplot(aes(
     x = mu_p, y = mu_s,
     colour = `Titre type`)) +
@@ -82,10 +72,10 @@ p_figure_3 <- dt_figure_3_data_plot |>
       group = interaction(
         `Infection history`,
         `Titre type`))) +
-  geom_point(data = dt_figure_3_data_plot[.draw <= 2000], 
+  geom_point(data = dt_figure_3_data_plot[.draw <= 2000],
              alpha = 0.05, size = 0.2) +
   geom_point(data = dt_figure_3_data_points,
-    aes(x = mu_p_me, y = mu_s_me, 
+    aes(x = mu_p_me, y = mu_s_me,
         shape = `Infection history`),
     colour = "black") +
   geom_path(data = dt_figure_3_data_points,
@@ -99,7 +89,7 @@ p_figure_3 <- dt_figure_3_data_plot |>
     breaks = c(40, 80, 160, 320, 640, 1280, 2560, 5120, 10240),
     labels = c(expression(" "<= 40),
                "80", "160", "320", "640", "1280", "2560", "5120", "10240"),
-    limits = c(NA, 10240)) + 
+    limits = c(NA, 10240)) +
   # geom_hline(yintercept = 40, linetype = "twodash", colour = "gray30") +
   geom_hline(yintercept = 2560, linetype = "twodash", colour = "gray30") +
   scale_y_continuous(
@@ -107,22 +97,22 @@ p_figure_3 <- dt_figure_3_data_plot |>
     breaks = c(40, 80, 160, 320, 640, 1280, 2560, 5120, 10240),
     labels = c(expression(" "<= 40),
                "80", "160", "320", "640", "1280", "2560", "5120", "10240"),
-    limits = c(NA, 5120)) + 
+    limits = c(NA, 5120)) +
   facet_nested(~Wave, scales = "fixed") +
   theme_linedraw() +
-  theme(legend.position = "bottom", 
+  theme(legend.position = "bottom",
         text = element_text(size = 9, family = "Helvetica"),
         strip.placement = "outside",
         plot.title = element_text(face = "plain", size = 9),
-        legend.box = "vertical", 
+        legend.box = "vertical",
         legend.margin = margin(),
         strip.background = element_rect(fill="white"),
         strip.text = element_text(colour = 'black')) +
-  scale_shape_manual(values = c(1, 2, 3)) + 
+  scale_shape_manual(values = c(1, 2, 3)) +
   labs(x = expression(paste("Population-level titre value at peak (IC"[50], ")")),
-       y = expression(paste("Population-level titre value at set-point (IC"[50], ")"))) + 
-  scale_colour_manual(values = manual_pal_figure) +
-  guides(colour = guide_legend(override.aes = list(alpha = 1, size = 1))) 
+       y = expression(paste("Population-level titre value at set-point (IC"[50], ")"))) +
+  scale_colour_manual(values = manual_pal) +
+  guides(colour = guide_legend(override.aes = list(alpha = 1, size = 1)))
 
 ggsave("outputs/figures/figure_3.png",
        p_figure_3,
@@ -182,11 +172,11 @@ p_figure_3_1 <-  dt_figure_3_1 |>
   facet_grid2(`Infection history` ~ parameter,
               scales = "free", independent = "all") +
   theme_linedraw() +
-  theme(legend.position = "bottom", 
+  theme(legend.position = "bottom",
         text = element_text(size = 9, family = "Helvetica"),
         strip.placement = "outside",
         plot.title = element_text(face = "plain", size = 9),
-        legend.box = "vertical", 
+        legend.box = "vertical",
         legend.margin = margin(),
         strip.background = element_rect(fill="white"),
         strip.text = element_text(colour = 'black'))
@@ -207,7 +197,7 @@ p_figure_3_2 <- dt_figure_3_2_sum |>
   ggplot(aes(x = Wave, y = me, ymin = lo, ymax = hi, colour = parameter)) +
   geom_pointrange(aes(shape = `Infection history`)) +
   geom_line(data = dt_figure_3_2_sum,
-            aes(x = Wave, y = me, 
+            aes(x = Wave, y = me,
                 group = interaction(`Infection history`, Wave_type, parameter))) +
   # geom_hline(yintercept = 40, linetype = "twodash", colour = "gray30") +
   # geom_hline(yintercept = 2560, linetype = "twodash", colour = "gray30") +
@@ -223,11 +213,11 @@ p_figure_3_2 <- dt_figure_3_2_sum |>
   # scale_shape_manual(values = c(1, 2, 3)) +
   # scale_colour_manual(values = c(manual_pal_figure[3], manual_pal_figure[5], manual_pal_figure[8])) +
   theme_linedraw() +
-  theme(legend.position = "bottom", 
+  theme(legend.position = "bottom",
         text = element_text(size = 9, family = "Helvetica"),
         strip.placement = "outside",
         plot.title = element_text(face = "plain", size = 9),
-        legend.box = "vertical", 
+        legend.box = "vertical",
         legend.margin = margin(),
         strip.background = element_rect(fill="white"),
         strip.text = element_text(colour = 'black')) +

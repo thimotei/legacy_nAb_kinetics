@@ -30,11 +30,11 @@ dt_figure_4_data <- rbind(
 
 # Putting data together
 dt_all_data_plot <- rbind(
-  dt_delta_data_full[, Wave := "Delta Wave"],
-  dt_ba2_data_full[, Wave := "BA.2 Wave"],
-  dt_xbb_data_full[, Wave := "XBB Wave"]) |>
+  dt_delta_full[, Wave := "Delta Wave"],
+  dt_ba2_full[, Wave := "BA.2 Wave"],
+  dt_xbb_full[, Wave := "XBB Wave"]) |>
   clean_covariate_names(
-    formula_val = formula_delta,
+    formula_val = covariate_formula,
     cleaned_names = c("Infection history", "Titre type")) |>
   convert_log_scale_inverse(vars_to_transform = "titre")
 
@@ -65,17 +65,6 @@ dt_dates <- data.table(
 min_date_overall <- dt_all_data_plot[, min(pmin(last_exp_date, date))]
 max_date_overall <- dt_all_data_plot[, max(pmax(last_exp_date, date))]
 
-custom_cols <-
-  c("#CC6677",
-    "#DDCC77",
-    "#88CCEE",
-    "#882255",
-    "#44AA99",
-    "grey",
-    "#D95F02",
-    "#66A61E")
-
-
 # Define your range of time_shift values
 time_shift_values <- seq(-75, 75, by = 15)
 
@@ -87,9 +76,9 @@ figure_4_panel_a <- plot_figure_4(
        x = "Date",
        y = expression(paste("Titre (IC"[50], ")"))) +
   scale_colour_manual(
-    values = custom_cols) +
+    values = manual_pal) +
   scale_fill_manual(
-    values = custom_cols) +
+    values = manual_pal) +
   scale_x_date(
     date_labels = "%b %Y",
     limits = c(min_date_overall, max_date_overall)) +
@@ -121,9 +110,9 @@ figure_4_panel_b <- dt_all_data_plot |>
     date_labels = "%b %Y",
     limits = c(min_date_overall, max_date_overall)) +
   scale_colour_manual(
-    values = c(custom_cols[3], custom_cols[5], custom_cols[8])) +
+    values = c(manual_pal[3], manual_pal[5], manual_pal[8])) +
   scale_fill_manual(
-    values = c(custom_cols[3], custom_cols[5], custom_cols[8])) +
+    values = c(manual_pal[3], manual_pal[5], manual_pal[8])) +
   labs(title = "Observed vaccine timings",
        tag = "B",
        x = "Date",
@@ -159,7 +148,7 @@ figure_4_panel_c <- ggplot(
     limits = c(NA, 5120)) +
   facet_nested(~Wave) +
   scale_colour_manual(
-    values = custom_cols) +
+    values = manual_pal) +
   labs(title = "Population titre values varying vaccine timings",
        x = "Time shift (days)",
        y = expression(paste("Titre (IC"[50], ")"))) +
