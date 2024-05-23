@@ -5,32 +5,32 @@
 # Processing fits
 dt_delta_plot_trunc <- process_fits(
   fit_delta_trunc, dt_delta_trunc, stan_data_delta_trunc,
-  covariate_formula, t_max = 150,
+  covariate_formula, t_max = 150, summarise = TRUE, scale = "natural",
   cleaned_names = c("Infection history", "Titre type"))
 
 dt_ba2_plot_trunc <- process_fits(
   fit_ba2_trunc, dt_ba2_trunc, stan_data_ba2_trunc,
-  covariate_formula, t_max = 150,
+  covariate_formula, t_max = 150, summarise = TRUE, scale = "natural",
   cleaned_names = c("Infection history", "Titre type"))
 
 dt_xbb_plot_trunc <- process_fits(
   fit_xbb_trunc, dt_xbb_trunc, stan_data_xbb_trunc,
-  covariate_formula, t_max = 150,
+  covariate_formula, t_max = 150, summarise = TRUE, scale = "natural",
   cleaned_names = c("Infection history", "Titre type"))
 
 dt_delta_plot_full <- process_fits(
   fit_delta_full, dt_delta_full, stan_data_delta_full,
-  covariate_formula, t_max = 150,
+  covariate_formula, t_max = 150, summarise = TRUE, scale = "natural",
   cleaned_names = c("Infection history", "Titre type"))
 
 dt_ba2_plot_full <- process_fits(
   fit_ba2_full, dt_ba2_full, stan_data_ba2_full,
-  covariate_formula, t_max = 150,
+  covariate_formula, t_max = 150, summarise = TRUE, scale = "natural",
   cleaned_names = c("Infection history", "Titre type"))
 
 dt_xbb_plot_full <- process_fits(
   fit_xbb_full, dt_xbb_full, stan_data_xbb_full,
-  covariate_formula, t_max = 150,
+  covariate_formula, t_max = 150, summarise = TRUE, scale = "natural",
   cleaned_names = c("Infection history", "Titre type"))
 
 dt_all_data_plot <- rbind(
@@ -121,20 +121,23 @@ p_figure_2_a <- build_figure_2(
   alpha_data_pre = 0.5,
   alpha_data_post = 0.25,
   alpha_fits_pre = 0.65,
-  alpha_fits_post = 0.15,
+  alpha_fits_post = 0.45,
   manual_facet_order = c("Delta wave", "BA.2 wave", "XBB wave"),
   plot_beyond = TRUE,
-  plot_data = TRUE) +
+  plot_data = FALSE) +
   scale_colour_manual(values = manual_pal) +
   scale_fill_manual(values = manual_pal) +
+  scale_linetype_manual("Type", values = c("Real-time" = "dashed", "Retrospective" = "solid")) +
   theme_linedraw() +
-  theme(legend.position = "none",
+  theme(legend.position = "bottom",
         text = element_text(size = 8, family = "Helvetica"),
-        strip.background =element_rect(fill="white"),
+        strip.background = element_rect(fill = "white"),
         strip.text = element_text(colour = 'black'),
         strip.placement = "outside",
-        plot.title = element_text(face = "bold", size = 9)) +
-  labs(tag = "A", title = "Population-level fits")
+        plot.title = element_text(face = "bold", size = 9),
+        panel.grid = element_line(linewidth = 0.4)) +
+  labs(tag = "A", title = "Population-level fits") +
+  guides(colour = "none", fill = "none")
 
 #---------------#
 #--- Panel B ---#
@@ -143,7 +146,7 @@ p_figure_2_a <- build_figure_2(
 # Delta fits
 dt_ind_traj_sum_delta <- simulate_and_sum_ind(
   fit_delta_full, dt_delta_full,
-  n_draws = 500, wave_manual = "Delta Wave",
+  n_draws = 1000, wave_manual = "Delta",
   scale = "log", adjust_dates = FALSE,
   time_shift = 0, t_max = 150, covariate_formula)
 
@@ -156,7 +159,7 @@ dt_delta_full_stan_plot <- convert_log_scale_inverse(
 # BA.2 fits
 dt_ind_traj_sum_ba2 <- simulate_and_sum_ind(
   fit_ba2_full, dt_ba2_full,
-  n_draws = 500, wave_manual = "BA.2 Wave",
+  n_draws = 1000, wave_manual = "BA.2",
   scale = "log", adjust_dates = FALSE,
   time_shift = 0, t_max = 150, covariate_formula)
 
@@ -169,7 +172,7 @@ dt_ba2_full_stan_plot <- convert_log_scale_inverse(
 # XBB fits
 dt_ind_traj_sum_xbb <- simulate_and_sum_ind(
   fit_xbb_full, dt_xbb_full,
-  n_draws = 500, wave_manual = "XBB Wave",
+  n_draws = 1000, wave_manual = "XBB",
   scale = "log", adjust_dates = FALSE,
   time_shift = 0, t_max = 150, covariate_formula)
 
@@ -182,26 +185,14 @@ dt_xbb_full_stan_plot <- convert_log_scale_inverse(
 dt_ind_fits_plot <- rbind(
   dt_ind_traj_sum_delta,
   dt_ind_traj_sum_ba2,
-  dt_ind_traj_sum_xbb)[
-    , Wave := fct_relevel(Wave, "Delta Wave")][
-      `Titre type` == "XBB", `Titre type` := "XBB.1.5"][
-        , `Titre type` := paste0(`Titre type`, " Abs")][
-          , `Titre type` := fct_relevel(`Titre type`, c(
-            "Ancestral Abs", "Alpha Abs", "Delta Abs",
-            "BA.1 Abs", "BA.2 Abs",
-            "BA.5 Abs", "BQ.1.1 Abs", "XBB.1.5 Abs"))]
+  dt_ind_traj_sum_xbb) |>
+  relevel_factors_for_plots()
 
 dt_ind_data_plot <- rbind(
-  dt_delta_full_stan_plot[, Wave := "Delta Wave"],
-  dt_ba2_full_stan_plot[, Wave := "BA.2 Wave"],
-  dt_xbb_full_stan_plot[, Wave := "XBB Wave"])[
-    , Wave := fct_relevel(Wave, "Delta Wave")][
-      `Titre type` == "XBB", `Titre type` := "XBB.1.5"][
-        , `Titre type` := paste0(`Titre type`, " Abs")][
-          , `Titre type` := fct_relevel(`Titre type`, c(
-            "Ancestral Abs", "Alpha Abs", "Delta Abs",
-            "BA.1 Abs", "BA.2 Abs",
-            "BA.5 Abs", "BQ.1.1 Abs", "XBB.1.5 Abs"))]
+  dt_delta_full_stan_plot,
+  dt_ba2_full_stan_plot,
+  dt_xbb_full_stan_plot) |>
+  relevel_factors_for_plots(wave = FALSE)
 
 # Choosing 4 individuals with exposures in all three waves
 id_wave_count <- dt_ind_fits_plot[, .(NumWaves = uniqueN(Wave)), by = id]
@@ -246,14 +237,14 @@ p_ind <- dt_ind_fits_plot_subset |>
     trans = "log2",
     breaks = c(40, 160, 640, 2560),
     labels = c("40", "160", "640", "2560")) +
-  # theme_cowplot(font_size = 7, font_family = "Helvetica", line_size = 0.25) +
   theme_linedraw() +
   theme(legend.position = "right",
         text = element_text(size = 8, family = "Helvetica"),
-        strip.background =element_rect(fill="white"),
+        strip.background = element_rect(fill = "white"),
         strip.text = element_text(colour = 'black'),
         strip.placement = "outside",
-        plot.title = element_text(face = "bold", size = 9)) +
+        plot.title = element_text(face = "bold", size = 9),
+        panel.grid = element_line(linewidth = 0.4)) +
   guides(fill = guide_legend(nrow = 2, byrow = TRUE)) +
   scale_shape_manual(values = c(1, 2, 3)) +
   labs(x = "Date",
@@ -274,13 +265,12 @@ p_figure_2 <- plot_grid(
 
 ggsave("outputs/figures/figure_2.pdf",
        p_figure_2,
-       width = 8.5,
+       width = 12,
        height = 10)
 
 ggsave("outputs/figures/figure_2.png",
        p_figure_2,
-       width = 8.5,
+       width = 12,
        height = 10,
        bg = "white")
-
 

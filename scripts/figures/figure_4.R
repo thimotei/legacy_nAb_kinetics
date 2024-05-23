@@ -1,188 +1,238 @@
-#--------------------#
-#--- Loading data ---#
-#--------------------#
+#--- Processing data
+dt_pop_params_delta <- figure_4_data(
+  fit_delta_full, dt_delta_full,
+  stan_data_delta_full, covariate_formula,
+  wave_manual = "Delta wave",
+  cleaned_names = c("Infection history", "Titre type"))
 
-dt_figure_4_data_full <- fread("outputs/data/figure_4_data.rds")
+dt_pop_params_ba2 <- figure_4_data(
+  fit_ba2_full, dt_ba2_full,
+  stan_data_ba2_full, covariate_formula,
+  wave_manual = "BA.2 wave",
+  cleaned_names = c("Infection history", "Titre type"))
 
-dt_figure_4_data_full[Wave == "Delta", Wave := "Delta Wave"]
-dt_figure_4_data_full[Wave == "BA.2", Wave := "BA.2 Wave"]
-dt_figure_4_data_full[Wave == "XBB", Wave := "XBB Wave"]
-
-#---------------#
-#--- Panel A ---#
-#---------------#
+dt_pop_params_xbb <- figure_4_data(
+  fit_xbb_full, dt_xbb_full,
+  stan_data_xbb_full, covariate_formula,
+  wave_manual = "XBB wave",
+  cleaned_names = c("Infection history", "Titre type"))
 
 dt_figure_4_data <- rbind(
-  dt_figure_4_data_full[calendar_date == date_delta & Wave == "Delta Wave"],
-  dt_figure_4_data_full[calendar_date == date_ba2 & Wave == "BA.2 Wave"],
-  dt_figure_4_data_full[calendar_date == date_xbb & Wave == "XBB Wave"])[
-    , `Titre type` := fct_relevel(
-      `Titre type`, c(
-        "Ancestral", "Alpha", "Delta",
-        "BA.2", "BA.5", "BQ.1.1", "XBB"))][
-    , Wave := factor(Wave)][, Wave := fct_relevel(Wave, "Delta Wave")][
-      `Titre type` == "XBB", `Titre type` := "XBB.1.5"][
-        , `Titre type` := paste0(`Titre type`, " Abs")][
-          , `Titre type` := fct_relevel(`Titre type`, c(
-            "Ancestral Abs", "Alpha Abs", "Delta Abs",
-            "BA.1 Abs", "BA.2 Abs",
-            "BA.5 Abs", "BQ.1.1 Abs", "XBB.1.5 Abs"))]
+  dt_pop_params_delta,
+  dt_pop_params_ba2,
+  dt_pop_params_xbb)
 
-# Putting data together
-dt_all_data_plot <- rbind(
-  dt_delta_full[, Wave := "Delta Wave"],
-  dt_ba2_full[, Wave := "BA.2 Wave"],
-  dt_xbb_full[, Wave := "XBB Wave"]) |>
-  clean_covariate_names(
-    formula_val = covariate_formula,
-    cleaned_names = c("Infection history", "Titre type")) |>
-  convert_log_scale_inverse(vars_to_transform = "titre")
+dt_figure_4_data[, Wave := fct_relevel(Wave, "Delta wave")]
 
-dt_all_data_plot[
-  `Titre type` == "XBB", `Titre type` := "XBB.1.5"][
-    , `Titre type` := paste0(`Titre type`, " Abs")][
-      , `Titre type` := fct_relevel(`Titre type`, c(
-        "Ancestral Abs", "Alpha Abs", "Delta Abs",
-        "BA.1 Abs", "BA.2 Abs",
-        "BA.5 Abs", "BQ.1.1 Abs", "XBB.1.5 Abs"))]
+dt_figure_4_data_plot <- dt_figure_4_data[
+  , rel_drop := mu_s/mu_p,
+  by = .(`Infection history`, Wave, `Titre type`)][
+    , `:=` (
+      rel_drop_me = quantile(rel_drop, 0.5),
+      mu_p_me = quantile(mu_p, 0.5),
+      mu_s_me = quantile(mu_s, 0.5)),
+    by = .(`Infection history`, Wave, `Titre type`)][
+      , `Infection history` := fct_relevel(
+        `Infection history`,
+        "Infection naive",
+        "Previously infected (Pre-Omicron)",
+        "Previously infected (Omicron)")][
+        , Wave := fct_relevel(Wave, "Delta wave")]
 
-min_date_ba2 <- dt_all_data_plot[
-  Wave == "BA.2 Wave"
-  , .(date = min(date)), by = Wave][, date]
+dt_figure_4_data_plot[
+  , `Titre type` := fct_relevel(
+    `Titre type`, c(
+      "Ancestral", "Alpha", "Delta",
+      "BA.2", "BA.5", "BQ.1.1", "XBB"))][
+          `Titre type` == "XBB", `Titre type` := "XBB.1.5"][
+            , `Titre type` := paste0(`Titre type`, " Abs")][
+              , `Titre type` := fct_relevel(`Titre type`, c(
+                "Ancestral Abs", "Alpha Abs", "Delta Abs",
+                "BA.1 Abs", "BA.2 Abs",
+                "BA.5 Abs", "BQ.1.1 Abs", "XBB.1.5 Abs"))]
 
-min_date_xbb <- dt_all_data_plot[
-  Wave == "XBB Wave"
-  , .(date = min(date)), by = Wave][, date]
+# Wave = Titre type condition, for simpler plot
+# [Wave == "Delta" & `Titre type` == "Delta" |
+#  Wave == "BA.2" & `Titre type` == "BA.2" |
+#  Wave == "XBB" & `Titre type` == "XBB"]
 
-max_date_xbb <- dt_all_data_plot[
-  Wave == "XBB Wave"
-  , .(date = max(date)), by = Wave][, date]
+dt_figure_4_data_points <- dt_figure_4_data_plot[, .(
+  Wave, `Infection history`, `Titre type`,
+  rel_drop_me, mu_p_me, mu_s_me)][
+  order(`Infection history`)] |>
+  unique()
 
-dt_dates <- data.table(
-  Wave = c("Delta Wave", "BA.2 Wave", "XBB Wave"),
-  date_wave_next = c(min_date_ba2, min_date_xbb, max_date_xbb))
-
-min_date_overall <- dt_all_data_plot[, min(pmin(last_exp_date, date))]
-max_date_overall <- dt_all_data_plot[, max(pmax(last_exp_date, date))]
-
-# Define your range of time_shift values
-time_shift_values <- seq(-75, 75, by = 15)
-
-figure_4_panel_a <- plot_figure_4(
-  dt_all_data_plot,
-  dt_dates) +
-  labs(title = "Population-level titre values",
-       tag = "A",
-       x = "Date",
-       y = expression(paste("Titre (IC"[50], ")"))) +
-  scale_colour_manual(
-    values = manual_pal) +
-  scale_fill_manual(
-    values = manual_pal) +
-  scale_x_date(
-    date_labels = "%b %Y",
-    limits = c(min_date_overall, max_date_overall)) +
-  theme_linedraw() +
-  theme(legend.position = "none",
-        text = element_text(size = 9, family = "Helvetica"),
-        strip.background = element_blank(),
-        strip.placement = "outside",
-        plot.title = element_text(face = "bold", size = 9),
-        legend.box = "vertical",
-        legend.margin = margin()) +
-  guides(colour = guide_legend(nrow = 1, override.aes = list(alpha = 1, size = 1)))
-
-#---------------#
-#--- Panel B ---#
-#---------------#
-
-dt_data_panel_b_plot <- dt_all_data_plot[
-  dt_dates, on = "Wave"]
-
-figure_4_panel_b <- dt_all_data_plot |>
-  ggplot() +
-  geom_density(aes(x = last_exp_date, fill = fct_relevel(Wave, "Delta Wave"))) +
-  geom_vline(aes(xintercept = date_delta), linetype = "dashed") +
-  geom_vline(aes(xintercept = date_ba2), linetype = "dashed") +
-  geom_vline(aes(xintercept = date_xbb), linetype = "dashed") +
-  # facet_grid(~Wave, scales = "free") +
-  scale_x_date(
-    date_labels = "%b %Y",
-    limits = c(min_date_overall, max_date_overall)) +
-  scale_colour_manual(
-    values = c(manual_pal[3], manual_pal[5], manual_pal[8])) +
-  scale_fill_manual(
-    values = c(manual_pal[3], manual_pal[5], manual_pal[8])) +
-  labs(title = "Observed vaccine timings",
-       tag = "B",
-       x = "Date",
-       y = "Density") +
-  theme_linedraw() +
-  theme(legend.position = "none",
-        text = element_text(size = 9, family = "Helvetica"),
-        strip.background = element_blank(),
-        strip.placement = "outside",
-        plot.title = element_text(face = "bold", size = 9))
-
-#---------------#
-#--- Panel C ---#
-#---------------#
-
-figure_4_panel_c <- ggplot(
-  data = dt_figure_4_data) +
-  geom_line(aes(
-    x = time_shift, y = me, colour = `Titre type`)) +
-  geom_pointrange(aes(
-    x = time_shift, y = me, ymin = lo,
-    ymax = hi, colour = `Titre type`)) +
-  geom_hline(
-    data = data.table(y = 2560),
-    aes(yintercept = y),
-    linetype = "dotdash", colour = "gray30", alpha = 0.5) +
+#--- Panel A
+p_figure_4 <- dt_figure_4_data_plot |>
+  ggplot(aes(
+    x = mu_p, y = mu_s,
+    colour = `Titre type`)) +
+  geom_density_2d(
+    aes(
+      group = interaction(
+        `Infection history`,
+        `Titre type`))) +
+  geom_point(data = dt_figure_4_data_plot[.draw <= 2000],
+             alpha = 0.05, size = 0.2) +
+  geom_point(data = dt_figure_4_data_points,
+    aes(x = mu_p_me, y = mu_s_me,
+        shape = `Infection history`),
+    colour = "black") +
+  geom_path(data = dt_figure_4_data_points,
+    aes(x = mu_p_me, y = mu_s_me,
+        group = `Titre type`),
+    colour = "black") +
+  # geom_vline(xintercept = 40, linetype = "twodash", colour = "gray30") +
+  geom_vline(xintercept = 2560, linetype = "twodash", colour = "gray30") +
   scale_x_continuous(
-    breaks = time_shift_values) +
+    trans = "log2",
+    breaks = c(40, 80, 160, 320, 640, 1280, 2560, 5120, 10240),
+    labels = c(expression(" "<= 40),
+               "80", "160", "320", "640", "1280", "2560", "5120", "10240"),
+    limits = c(NA, 10240)) +
+  # geom_hline(yintercept = 40, linetype = "twodash", colour = "gray30") +
+  geom_hline(yintercept = 2560, linetype = "twodash", colour = "gray30") +
   scale_y_continuous(
     trans = "log2",
-    breaks = c(40, 80, 160, 320, 640, 1280, 2560, 5120),
-    labels = c("40", "80", "160", "320", "640", "1280", "2560", "5120"),
+    breaks = c(40, 80, 160, 320, 640, 1280, 2560, 5120, 10240),
+    labels = c(expression(" "<= 40),
+               "80", "160", "320", "640", "1280", "2560", "5120", "10240"),
     limits = c(NA, 5120)) +
-  facet_nested(~Wave) +
-  scale_colour_manual(
-    values = manual_pal) +
-  labs(title = "Population titre values varying vaccine timings",
-       x = "Time shift (days)",
-       y = expression(paste("Titre (IC"[50], ")"))) +
+  facet_nested(~Wave, scales = "fixed") +
   theme_linedraw() +
-  guides(colour = guide_legend(nrow = 1, override.aes = list(alpha = 1, size = 1))) +
   theme(legend.position = "bottom",
-        text = element_text(size = 8, family = "Helvetica"),
-        strip.background =element_rect(fill="white"),
-        strip.text = element_text(colour = 'black'),
+        text = element_text(size = 9, family = "Helvetica"),
         strip.placement = "outside",
-        plot.title = element_text(face = "bold", size = 9)) +
-  labs(tag = "C",
-       title = "Counterfactual population-level titres varying vaccination timings")
+        plot.title = element_text(face = "plain", size = 9),
+        legend.box = "vertical",
+        legend.margin = margin(),
+        strip.background = element_rect(fill="white"),
+        strip.text = element_text(colour = 'black')) +
+  scale_shape_manual(values = c(1, 2, 3)) +
+  labs(x = expression(paste("Population-level titre value at peak (IC"[50], ")")),
+       y = expression(paste("Population-level titre value at set-point (IC"[50], ")"))) +
+  scale_colour_manual(values = manual_pal) +
+  guides(colour = guide_legend(override.aes = list(alpha = 1, size = 1)))
 
-#-------------------#
-#--- Full figure ---#
-#-------------------#
+ggsave("outputs/figures/figure_4.png",
+       p_figure_4,
+       width = 7,
+       height = 5,
+       bg = "white")
 
-figure_4 <- cowplot::plot_grid(
-  figure_4_panel_a,
-  figure_4_panel_b,
-  figure_4_panel_c,
-  nrow = 3, rel_heights = c(1, 0.5, 0.75), align = "v", axis = "l")
+ggsave("outputs/figures/figure_4.pdf",
+       p_figure_4,
+       width = 7,
+       height = 5)
+
+# ggsave("outputs/figures/figure_4.pdf",
+#        p_figure_4,
+#        width = 8.5,
+#        height = 5.5,
+#        bg = "white")
+
+#--- Panel B
+process_params <- c(
+  "t0_pop", "tp_pop", "ts_pop", "m1_pop", "m2_pop", "m3_pop", "mu_p", "mu_s")
+
+dt_figure_4_data_long <- melt(
+  dt_figure_4_data,
+  measure.vars = process_params,
+  variable.name = "parameter")
+
+dt_figure_4_data_long[
+  Wave == "Delta wave" & `Titre type` == "Delta Abs", Wave_type := "focal"]
+
+dt_figure_4_data_long[
+  Wave == "BA.2 wave" & `Titre type` == "BA.2 Abs", Wave_type := "focal"]
+
+dt_figure_4_data_long[
+  Wave == "XBB wave" & `Titre type` == "XBB.1.5 Abs", Wave_type := "focal"]
+
+dt_figure_4_data_long_focal <- dt_figure_4_data_long[Wave_type == "focal"]
+
+dt_figure_4_data_long_sum <- summarise_draws(
+  dt_figure_4_data_long_focal,
+  column_name = "value",
+  by = c("Infection history",
+         "Wave_type", "Titre type", "Wave",
+         "parameter"))
+
+dt_figure_4_1 <- dt_figure_4_data_long_focal[
+  parameter %like% "m" & !parameter %like% "mu"][
+    parameter == "m1_pop", parameter := "Gradient of boost"][
+      parameter == "m2_pop", parameter := "Gradient of initial wane"][
+        parameter == "m3_pop", parameter := "Gradient of set point dynamic"]
+
+p_figure_4_1 <-  dt_figure_4_1 |>
+  ggplot(aes(x = Wave, y = value*100, colour = `Titre type`)) +
+  geom_boxplot(outlier.shape = NA) +
+  geom_hline(yintercept = 0, linetype = "twodash", colour = "gray30") +
+  labs(y = "Titre value change per 100 days (log2 scale)") +
+  facet_grid2(`Infection history` ~ parameter,
+              scales = "free", independent = "all") +
+  theme_linedraw() +
+  theme(legend.position = "bottom",
+        text = element_text(size = 9, family = "Helvetica"),
+        strip.placement = "outside",
+        plot.title = element_text(face = "plain", size = 9),
+        legend.box = "vertical",
+        legend.margin = margin(),
+        strip.background = element_rect(fill="white"),
+        strip.text = element_text(colour = 'black'))
+
+dt_figure_4_2_full <- dt_figure_4_data_long_focal[
+  parameter %like% "mu"][
+    parameter == "mu_p", parameter := "Titre value at peak"][
+      parameter == "mu_s", parameter := "Titre value at set point"]
+
+dt_figure_4_2_sum <- dt_figure_4_data_long_sum[
+  parameter %like% "mu"][
+    parameter == "mu_p", parameter := "Titre value at peak"][
+      parameter == "mu_s", parameter := "Titre value at set point"]
+
+# custom_cols <- manual_pal_figure()(9)
+
+p_figure_4_2 <- dt_figure_4_2_sum |>
+  ggplot(aes(x = Wave, y = me, ymin = lo, ymax = hi, colour = parameter)) +
+  geom_pointrange(aes(shape = `Infection history`)) +
+  geom_line(data = dt_figure_4_2_sum,
+            aes(x = Wave, y = me,
+                group = interaction(`Infection history`, Wave_type, parameter))) +
+  # geom_hline(yintercept = 40, linetype = "twodash", colour = "gray30") +
+  # geom_hline(yintercept = 2560, linetype = "twodash", colour = "gray30") +
+  scale_y_continuous(
+    trans = "log2",
+    breaks = c(40, 80, 160, 320, 640, 1280, 2560),
+    labels = c(expression(""<=40),
+               "80", "160", "320", "640", "1280",
+               expression("">=2560))) +
+  labs(title = "Peak titre values against emerging VOC",
+       tag = "B",
+       y = expression(paste("Titre value at peak (log"[2], ")"))) +
+  # scale_shape_manual(values = c(1, 2, 3)) +
+  # scale_colour_manual(values = c(manual_pal_figure[3], manual_pal_figure[5], manual_pal_figure[8])) +
+  theme_linedraw() +
+  theme(legend.position = "bottom",
+        text = element_text(size = 9, family = "Helvetica"),
+        strip.placement = "outside",
+        plot.title = element_text(face = "plain", size = 9),
+        legend.box = "vertical",
+        legend.margin = margin(),
+        strip.background = element_rect(fill="white"),
+        strip.text = element_text(colour = 'black')) +
+  facet_grid(~`Infection history`)
+
+figure_4 <- cowplot::plot_grid(p_figure_4, p_figure_4_2, nrow = 2, rel_heights = c(1, 0.6))
 
 ggsave("outputs/figures/figure_4.png",
        figure_4,
-       width = 8,
-       height = 10,
+       width = 10,
+       height = 8,
        bg = "white")
 
 ggsave("outputs/figures/figure_4.pdf",
        figure_4,
-       width = 8,
-       height = 10,
+       width = 10,
+       height = 8,
        bg = "white")
-
-

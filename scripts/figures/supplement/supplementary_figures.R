@@ -507,7 +507,7 @@ ggsave("outputs/figures/supplementary_figures/higher_ind.png",
 monovalent_vax <- c("BNT162b2", "mRNA1273")
 bivalent_vax <- c("mRNA1273.214", "BNT162b2+BA1")
 
-dt_xbb_bivalent <- dt_xbb_full_stan[
+dt_xbb_bivalent <- dt_xbb_full[
   !is.na(last_vax_type)][
   last_vax_type != "others"]
 

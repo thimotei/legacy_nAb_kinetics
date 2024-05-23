@@ -18,12 +18,12 @@ results_list <- lapply(indices, function(index) {
 
   # Run your function with the current value of time_shift
   result <- simulate_and_sum_pop_mean_from_ind(
-    fit_delta_full, dt_delta_full_stan,
-    fit_ba2_full, dt_ba2_full_stan,
-    fit_xbb_full, dt_xbb_full_stan, n_draws = 10,
+    fit_delta_full, dt_delta_full,
+    fit_ba2_full, dt_ba2_full,
+    fit_xbb_full, dt_xbb_full, n_draws = 1500,
     wave_1 = "Delta", wave_2 = "BA.2", wave_3 = "XBB",
     time_shift = shift, adjust_dates = TRUE,
-    formula = formula_delta
+    formula = covariate_formula
   )
 
   # Add a column for the time_shift value
@@ -33,7 +33,7 @@ results_list <- lapply(indices, function(index) {
 })
 
 # Combine all results into one data.table
-dt_figure_4_data_full <- data.table(rbindlist(results_list))
+dt_figure_5_data_full <- data.table(rbindlist(results_list))
 
-fwrite(dt_figure_4_data_full, "outputs/data/figure_4_data.rds")
+fwrite(dt_figure_5_data_full, "outputs/data/figure_5_data.rds")
 

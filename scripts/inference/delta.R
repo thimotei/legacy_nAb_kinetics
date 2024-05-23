@@ -20,7 +20,7 @@ if(!file.exists("outputs/fits/delta_trunc.rds")){
     chains = 4,
     parallel_chains = 4,
     iter_warmup = 1000,
-    iter_sampling = 2000,
+    iter_sampling = 4000,
     threads_per_chain = 4)
 
   # Fitting the model to the full dataset
@@ -29,7 +29,7 @@ if(!file.exists("outputs/fits/delta_trunc.rds")){
     chains = 4,
     parallel_chains = 4,
     iter_warmup = 1000,
-    iter_sampling = 2000,
+    iter_sampling = 4000,
     threads_per_chain = 4)
 
   # Saving fits
