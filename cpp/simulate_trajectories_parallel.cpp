@@ -1,4 +1,5 @@
 #include <Rcpp.h>
+#include <omp.h>
 using namespace Rcpp;
 
 // Function for the underlying mathematical model
@@ -6,15 +7,18 @@ using namespace Rcpp;
 NumericVector simulate_trajectory_cpp(
     int t_max, double t0_ind, double tp_ind, double ts_ind, double m1_ind, double m2_ind, double m3_ind) {
   NumericVector mu(t_max + 1);
+
+#pragma omp parallel for
   for(int t = 0; t <= t_max; t++) {
+    double value;
     if(t <= tp_ind) {
-      mu[t] = t0_ind + m1_ind * t;
+      value = t0_ind + m1_ind * t;
     } else if(t <= ts_ind) {
-      mu[t] = t0_ind + m1_ind * tp_ind + m2_ind * (t - tp_ind);
+      value = t0_ind + m1_ind * tp_ind + m2_ind * (t - tp_ind);
     } else {
-      mu[t] = t0_ind + m1_ind * tp_ind + m2_ind * (ts_ind - tp_ind) + m3_ind * (t - ts_ind);
+      value = t0_ind + m1_ind * tp_ind + m2_ind * (ts_ind - tp_ind) + m3_ind * (t - ts_ind);
     }
-    mu[t] = std::max(mu[t], 0.0);  // Ensure non-negative value
+    mu[t] = std::max(value, 0.0);  // Ensure non-negative value
   }
   return mu;
 }
@@ -33,10 +37,16 @@ DataFrame simulation_wrapper_cpp(const DataFrame &person_params) {
   IntegerVector titre_type = person_params["titre_type"];
   IntegerVector draw = person_params["draw"];
 
-  // Create a placeholder for results
-  std::vector<int> out_id, out_titre_type, out_draw, out_t;
-  std::vector<double> out_mu;
+  int total_size = 0;
+  for(int p = 0; p < stan_id.size(); p++) {
+    total_size += t_max_individual[p] + 1;
+  }
 
+  // Preallocate vectors with the total size
+  std::vector<int> out_id(total_size), out_titre_type(total_size), out_draw(total_size), out_t(total_size);
+  std::vector<double> out_mu(total_size);
+
+#pragma omp parallel for
   for(int p = 0; p < stan_id.size(); p++) {
     int curr_id = stan_id[p];
     int curr_titre_type = titre_type[p];
@@ -46,12 +56,18 @@ DataFrame simulation_wrapper_cpp(const DataFrame &person_params) {
     NumericVector mu = simulate_trajectory_cpp(
       t_max, t0_ind[p], tp_ind[p], ts_ind[p], m1_ind[p], m2_ind[p], m3_ind[p]);
 
+    int start_index = 0;
+    for(int i = 0; i < p; i++) {
+      start_index += t_max_individual[i] + 1;
+    }
+
     for(int t = 0; t <= t_max; t++) {
-      out_id.push_back(curr_id);
-      out_titre_type.push_back(curr_titre_type);
-      out_draw.push_back(curr_draw);
-      out_t.push_back(t);
-      out_mu.push_back(mu[t]);
+      int index = start_index + t;
+      out_id[index] = curr_id;
+      out_titre_type[index] = curr_titre_type;
+      out_draw[index] = curr_draw;
+      out_t[index] = t;
+      out_mu[index] = mu[t];
     }
   }
 
