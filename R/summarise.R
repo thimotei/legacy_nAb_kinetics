@@ -57,7 +57,8 @@ summarise_draws_vector <- function(
 }
 
 summarise_pop_fit <- function(
-    fit, time_range = seq(0, 200, 1), summarise = TRUE) {
+    fit, time_range = seq(0, 200, 1), summarise = TRUE,
+    n_draws = 2500) {
 
   dt_samples_wide <- spread_draws(
     fit,
@@ -66,6 +67,8 @@ summarise_pop_fit <- function(
     beta_t0[p], beta_tp[p], beta_ts[p],
     beta_m1[p], beta_m2[p], beta_m3[p]) |>
     data.table()
+
+  dt_samples_wide <- dt_samples_wide[.draw %in% 1:n_draws]
 
   dt_samples_wide[, `:=` (.chain = NULL, .iteration = NULL)]
 

@@ -404,8 +404,6 @@ dt_ind_fits_plot |>
   guides(colour = guide_legend(override.aes = list(alpha = 1, size = 1))) +
   facet_nested(Wave~.)
 
-
-
 ggsave(
   "outputs/figures/supplementary_figures/ind_delta_fits.png",
   p_ind_delta,

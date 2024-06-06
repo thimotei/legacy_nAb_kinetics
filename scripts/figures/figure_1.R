@@ -198,7 +198,7 @@ ggsave("outputs/figures/figure_1.png",
        width = 10,
        bg = "white")
 
-ggsave("outputs/figures/figure_1.pdf",
+ggsave("outputs/figures/figure_1.svg",
        p_figure_1,
        height = 10,
        width = 10,

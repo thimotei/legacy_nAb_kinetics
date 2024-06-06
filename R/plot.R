@@ -105,7 +105,7 @@ build_figure_2 <- function(
     geom_line(data = dt_h2_line, aes(x = x, y = y),
               linetype = "dotdash", colour = "gray30", alpha = 0.4) +
     geom_line(data = dt_emergence_lines, aes(x = t, y = y),
-              linetype = "twodash", colour = "gray30") +
+              linetype = "dashed", colour = "gray30", alpha = 0.4) +
     # geom_line(data = dt_dominance_lines, aes(x = t, y = y),
     #           linetype = "dotdash", colour = "gray30") +
     scale_y_continuous(

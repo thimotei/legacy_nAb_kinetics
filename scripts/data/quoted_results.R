@@ -33,4 +33,13 @@ summarise_draws(
   by = c("Infection history", "Wave"))
 
 
+dt_fits_long_sum <- summarise_draws(
+  dt_fits_long, column_name = "mu",
+  by = c("t"))
+
+summarise_draws(
+  dt_fits_wide[
+    `Infection history` != "Previously infected (Omicron)",
+    .(mu_diff = mu_full - mu_trunc)], column_name = "mu_diff")
+
 

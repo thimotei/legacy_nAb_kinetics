@@ -1,9 +1,11 @@
 figure_4_data <- function(
     fit, dt_stan, stan_data, formula_val, wave_manual,
-    cleaned_names = c("Infection history", "Titre type")) {
+    cleaned_names = c("Infection history", "Titre type"),
+    n_draws = 2500) {
 
   # Extracting population-level parameters
-  dt_peak_switch <- extract_parameters_pop(fit)[, Wave := wave_manual]
+  dt_peak_switch <- extract_parameters_pop(
+    fit, n_draws = 2500)[, Wave := wave_manual]
 
   # Calculating the peak and switch titre values stratified by covariates
   # and titre types

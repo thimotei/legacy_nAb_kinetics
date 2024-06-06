@@ -221,10 +221,12 @@ process_fits <- function(
     fit, dt_stan, stan_data,
     formula, time_type = "relative", t_max, summarise = TRUE,
     by = c("Infection history", "Titre type"), scale = "natural",
-    cleaned_names = c("Infection history", "Titre type")) {
+    cleaned_names = c("Infection history", "Titre type"),
+    n_draws = 2500) {
 
   dt_sum <- summarise_pop_fit(
-    fit, time_range = seq(0, t_max), summarise = summarise)
+    fit, time_range = seq(0, t_max), summarise = summarise,
+    n_draws = n_draws)
 
   dt_out <- recover_covariate_names(
     dt_sum, dt_stan, stan_data, formula)

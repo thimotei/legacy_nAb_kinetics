@@ -1,6 +1,10 @@
 library(ggridges)
 library(ggnewscale)
 
+# NOTE, some supplementary figures require the "id" variable, not just
+# stan_id. Work is ongoing to ensure all figures that are possible to build
+# without id run.
+
 ###############################
 ## FIGURE S1 - EVENT TIMINGS ##
 ###############################

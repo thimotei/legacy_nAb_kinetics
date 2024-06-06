@@ -63,7 +63,7 @@ figure_5_panel_a <- plot_figure_5(
   dt_dates = dt_dates,
   alpha_splines = 1, alpha_model = 0.2,
   alpha_model_smooth = 0.5, span_model = 0.2,
-  plot_data = FALSE) +
+  plot_data = FALSE, plot_model_splines = TRUE) +
   labs(title = "Population-level titre values",
        tag = "A",
        x = "Date",
@@ -109,10 +109,10 @@ figure_5_panel_b <- dt_all_data_plot |>
     values = c(manual_pal[3], manual_pal[5], manual_pal[8])) +
   scale_fill_manual(
     values = c(manual_pal[3], manual_pal[5], manual_pal[8])) +
-  labs(title = "Observed vaccine timings",
+  labs(title = "Weekly vaccines administered",
        tag = "B",
        x = "Date",
-       y = "Density") +
+       y = "Number") +
   theme_linedraw() +
   theme(legend.position = "none",
         text = element_text(size = 9, family = "Helvetica"),
@@ -175,7 +175,7 @@ ggsave("outputs/figures/figure_5.png",
        height = 8.5,
        bg = "white")
 
-ggsave("outputs/figures/figure_5.pdf",
+ggsave("outputs/figures/figure_5.svg",
        figure_5,
        width = 16,
        height = 10,
@@ -191,7 +191,10 @@ figure_5_panel_a_supplement <- plot_figure_5(
   dt_dates = dt_dates,
   alpha_splines = 1, alpha_model = 0.2,
   alpha_model_smooth = 0.5, span_model = 0.2,
-  plot_data = FALSE, plot_model_splines = FALSE) +
+  plot_data = TRUE,
+  plot_model = FALSE,
+  plot_raw_data_splines = TRUE,
+  plot_model_splines = FALSE) +
   labs(x = "Date",
        y = expression(paste("Titre (IC"[50], ")"))) +
   scale_colour_manual(
@@ -209,15 +212,14 @@ figure_5_panel_a_supplement <- plot_figure_5(
         plot.title = element_text(face = "bold", size = 9),
         legend.box = "vertical",
         legend.margin = margin()) +
-  guides(colour = guide_legend(nrow = 1, override.aes = list(alpha = 1, size = 1))) +
-  geom_smooth(data = dt_all_data_plot,
-              aes(x = date, y = titre, colour = `Titre type`),
-              alpha = 0.2)
+  guides(colour = guide_legend(
+    nrow = 1,
+    override.aes = list(alpha = 1, size = 1)))
 
 ggsave(
   "outputs/figures/supplementary_figures/figure_5_no_model_splines.png",
   figure_5_panel_a_supplement,
-  width = 10,
-  height = 6,
+  width = 6,
+  height = 3.5,
   bg = "white")
 

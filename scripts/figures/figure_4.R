@@ -114,16 +114,16 @@ p_figure_4 <- dt_figure_4_data_plot |>
   scale_colour_manual(values = manual_pal) +
   guides(colour = guide_legend(override.aes = list(alpha = 1, size = 1)))
 
-ggsave("outputs/figures/figure_4.png",
-       p_figure_4,
-       width = 7,
-       height = 5,
-       bg = "white")
-
-ggsave("outputs/figures/figure_4.pdf",
-       p_figure_4,
-       width = 7,
-       height = 5)
+# ggsave("outputs/figures/figure_4.png",
+#        p_figure_4,
+#        width = 7,
+#        height = 5,
+#        bg = "white")
+#
+# ggsave("outputs/figures/figure_4.pdf",
+#        p_figure_4,
+#        width = 7,
+#        height = 5)
 
 # ggsave("outputs/figures/figure_4.pdf",
 #        p_figure_4,
@@ -231,7 +231,7 @@ ggsave("outputs/figures/figure_4.png",
        height = 8,
        bg = "white")
 
-ggsave("outputs/figures/figure_4.pdf",
+ggsave("outputs/figures/figure_4.svg",
        figure_4,
        width = 10,
        height = 8,

@@ -2,36 +2,44 @@
 #--- Panel A ---#
 #---------------#
 
+n_draws_a <- 16000
+
 # Processing fits
 dt_delta_plot_trunc <- process_fits(
   fit_delta_trunc, dt_delta_trunc, stan_data_delta_trunc,
   covariate_formula, t_max = 150, summarise = FALSE, scale = "natural",
-  cleaned_names = c("Infection history", "Titre type"))
+  cleaned_names = c("Infection history", "Titre type"), n_draws = n_draws_a)
+
+# Processing fits
+dt_delta_plot_trunc <- process_fits(
+  fit_delta_trunc, dt_delta_trunc, stan_data_delta_trunc,
+  covariate_formula, t_max = 150, summarise = FALSE, scale = "natural",
+  cleaned_names = c("Infection history", "Titre type"), n_draws = n_draws_a)
 
 dt_ba2_plot_trunc <- process_fits(
   fit_ba2_trunc, dt_ba2_trunc, stan_data_ba2_trunc,
   covariate_formula, t_max = 150, summarise = FALSE, scale = "natural",
-  cleaned_names = c("Infection history", "Titre type"))
+  cleaned_names = c("Infection history", "Titre type"), n_draws = n_draws_a)
 
 dt_xbb_plot_trunc <- process_fits(
   fit_xbb_trunc, dt_xbb_trunc, stan_data_xbb_trunc,
   covariate_formula, t_max = 150, summarise = FALSE, scale = "natural",
-  cleaned_names = c("Infection history", "Titre type"))
+  cleaned_names = c("Infection history", "Titre type"), n_draws = n_draws_a)
 
 dt_delta_plot_full <- process_fits(
   fit_delta_full, dt_delta_full, stan_data_delta_full,
   covariate_formula, t_max = 150, summarise = FALSE, scale = "natural",
-  cleaned_names = c("Infection history", "Titre type"))
+  cleaned_names = c("Infection history", "Titre type"), n_draws = n_draws_a)
 
 dt_ba2_plot_full <- process_fits(
   fit_ba2_full, dt_ba2_full, stan_data_ba2_full,
   covariate_formula, t_max = 150, summarise = FALSE, scale = "natural",
-  cleaned_names = c("Infection history", "Titre type"))
+  cleaned_names = c("Infection history", "Titre type"), n_draws = n_draws_a)
 
 dt_xbb_plot_full <- process_fits(
   fit_xbb_full, dt_xbb_full, stan_data_xbb_full,
   covariate_formula, t_max = 150, summarise = FALSE, scale = "natural",
-  cleaned_names = c("Infection history", "Titre type"))
+  cleaned_names = c("Infection history", "Titre type"), n_draws = n_draws_a)
 
 dt_all_data_plot <- rbind(
   dt_delta_full[, Wave := "Delta wave"],
@@ -145,7 +153,8 @@ dt_fits_long_sum <- summarise_draws(
   by = c("t", "Titre type", "Infection history", "Wave", "Type"))
 
 # Real-time vs retrospective fits
-p1 <- dt_fits_long_sum[, Wave := fct_relevel(Wave, "Delta wave")] |>
+p1 <- dt_fits_long_sum[, Wave := fct_relevel(Wave, "Delta wave")][
+  `Infection history` != "Previously infected (Omicron)"] |>
   ggplot() +
   geom_line(aes(x = t, y = me, colour = Type)) +
   # geom_line(aes(x = t, y = mu_trunc, group = .draw), colour = "blue", alpha = 0.05) +
@@ -173,7 +182,8 @@ ggsave(
   height = 7,
   bg = "white")
 
-p2 <- dt_fits_wide_sum[, Wave := fct_relevel(Wave, "Delta wave")]  |>
+p2 <- dt_fits_wide_sum[, Wave := fct_relevel(Wave, "Delta wave")][
+  `Infection history` != "Previously infected (Omicron)"]  |>
   ggplot() +
   geom_line(aes(x = t, y = me)) +
   geom_ribbon(aes(x = t, ymin = lo, ymax = hi), alpha = 0.5) +
@@ -192,12 +202,15 @@ p2 <- dt_fits_wide_sum[, Wave := fct_relevel(Wave, "Delta wave")]  |>
        x = "Time (days since vaccination)",
        y = expression(paste("Absolute difference (", log[2], IC[50], ")")))
 
+n_draws_b <- 8000
+
 #--- Processing data
 dt_delta_trunc_peak_switch <- figure_4_data(
   fit_delta_trunc, dt_delta_trunc,
   stan_data_delta_trunc, covariate_formula,
   wave_manual = "Delta wave",
-  cleaned_names = c("Infection history", "Titre type"))[
+  cleaned_names = c("Infection history", "Titre type"),
+  n_draws = n_draws_b)[
     , .(.draw, mu_0_trunc = mu_0, mu_p_trunc = mu_p, mu_s_trunc = mu_s,
         `Infection history`, `Titre type`)]
 
@@ -205,7 +218,8 @@ dt_ba2_trunc_peak_switch <- figure_4_data(
   fit_ba2_trunc, dt_ba2_trunc,
   stan_data_ba2_trunc, covariate_formula,
   wave_manual = "BA.2 wave",
-  cleaned_names = c("Infection history", "Titre type"))[
+  cleaned_names = c("Infection history", "Titre type"),
+  n_draws = n_draws_b)[
     , .(.draw, mu_0_trunc = mu_0, mu_p_trunc = mu_p, mu_s_trunc = mu_s,
         `Infection history`, `Titre type`)]
 
@@ -213,7 +227,8 @@ dt_xbb_trunc_peak_switch <- figure_4_data(
   fit_xbb_trunc, dt_xbb_trunc,
   stan_data_xbb_trunc, covariate_formula,
   wave_manual = "XBB wave",
-  cleaned_names = c("Infection history", "Titre type"))[
+  cleaned_names = c("Infection history", "Titre type"),
+  n_draws = n_draws_b)[
     , .(.draw, mu_0_trunc = mu_0, mu_p_trunc = mu_p, mu_s_trunc = mu_s,
         `Infection history`, `Titre type`)]
 
@@ -221,7 +236,8 @@ dt_delta_full_peak_switch <- figure_4_data(
   fit_delta_full, dt_delta_full,
   stan_data_delta_full, covariate_formula,
   wave_manual = "Delta wave",
-  cleaned_names = c("Infection history", "Titre type"))[
+  cleaned_names = c("Infection history", "Titre type"),
+  n_draws = n_draws_b)[
     , .(.draw, mu_0_full = mu_0, mu_p_full = mu_p, mu_s_full = mu_s,
         `Infection history`, `Titre type`)]
 
@@ -229,7 +245,8 @@ dt_ba2_full_peak_switch <- figure_4_data(
   fit_ba2_full, dt_ba2_full,
   stan_data_ba2_full, covariate_formula,
   wave_manual = "BA.2 wave",
-  cleaned_names = c("Infection history", "Titre type"))[
+  cleaned_names = c("Infection history", "Titre type"),
+  n_draws = n_draws_b)[
     , .(.draw, mu_0_full = mu_0, mu_p_full = mu_p, mu_s_full = mu_s,
         `Infection history`, `Titre type`)]
 
@@ -237,7 +254,8 @@ dt_xbb_full_peak_switch <- figure_4_data(
   fit_xbb_full, dt_xbb_full,
   stan_data_xbb_full, covariate_formula,
   wave_manual = "XBB wave",
-  cleaned_names = c("Infection history", "Titre type"))[
+  cleaned_names = c("Infection history", "Titre type"),
+  n_draws = n_draws_b)[
     , .(.draw, mu_0_full = mu_0, mu_p_full = mu_p, mu_s_full = mu_s,
         `Infection history`, `Titre type`)]
 
@@ -260,28 +278,32 @@ dt_delta_trunc_peak_switch <- figure_4_data(
   fit_delta_trunc, dt_delta_trunc,
   stan_data_delta_trunc, covariate_formula,
   wave_manual = "Delta wave",
-  cleaned_names = c("Infection history", "Titre type"))[
+  cleaned_names = c("Infection history", "Titre type"),
+  n_draws = n_draws_b)[
     , .(.draw,  mu_0, mu_p, mu_s, `Infection history`, `Titre type`)]
 
 dt_ba2_trunc_peak_switch <- figure_4_data(
   fit_ba2_trunc, dt_ba2_trunc,
   stan_data_ba2_trunc, covariate_formula,
   wave_manual = "BA.2 wave",
-  cleaned_names = c("Infection history", "Titre type"))[
+  cleaned_names = c("Infection history", "Titre type"),
+  n_draws = n_draws_b)[
     , .(.draw, mu_0, mu_p, mu_s, `Infection history`, `Titre type`)]
 
 dt_xbb_trunc_peak_switch <- figure_4_data(
   fit_xbb_trunc, dt_xbb_trunc,
   stan_data_xbb_trunc, covariate_formula,
   wave_manual = "XBB wave",
-  cleaned_names = c("Infection history", "Titre type"))[
+  cleaned_names = c("Infection history", "Titre type"),
+  n_draws = n_draws_b)[
     , .(.draw, mu_0, mu_p, mu_s, `Infection history`, `Titre type`)]
 
 dt_delta_full_peak_switch <- figure_4_data(
   fit_delta_full, dt_delta_full,
   stan_data_delta_full, covariate_formula,
   wave_manual = "Delta wave",
-  cleaned_names = c("Infection history", "Titre type"))[
+  cleaned_names = c("Infection history", "Titre type"),
+  n_draws = n_draws_b)[
     , .(.draw, mu_0, mu_p, mu_s, `Infection history`, `Titre type`)]
 
 dt_ba2_full_peak_switch <- figure_4_data(
@@ -295,7 +317,8 @@ dt_xbb_full_peak_switch <- figure_4_data(
   fit_xbb_full, dt_xbb_full,
   stan_data_xbb_full, covariate_formula,
   wave_manual = "XBB wave",
-  cleaned_names = c("Infection history", "Titre type"))[
+  cleaned_names = c("Infection history", "Titre type"),
+  n_draws = n_draws_b)[
     , .(.draw, mu_0, mu_p, mu_s, `Infection history`, `Titre type`)]
 
 dt_delta_peak_switch <- rbind(
@@ -328,7 +351,8 @@ dt_bayesian_estimates[, `Model Type` := "Bayesian"]
 p_mu_0 <- dt_peak_switch[
   , Wave := fct_relevel(Wave, "Delta")][
   , `Infection history` := fct_relevel(
-    `Infection history`, c("Infection naive", "Previously infected (Pre-Omicron)"))] |>
+    `Infection history`, c("Infection naive", "Previously infected (Pre-Omicron)"))][
+      `Infection history` != "Previously infected (Omicron)"] |>
   ggplot() +
   geom_boxplot(
     outlier.shape = NA,
@@ -348,7 +372,8 @@ p_mu_0 <- dt_peak_switch[
 
 p_mu_p <- dt_peak_switch[, Wave := fct_relevel(Wave, "Delta")][
   , `Infection history` := fct_relevel(
-    `Infection history`, c("Infection naive", "Previously infected (Pre-Omicron)"))] |>
+    `Infection history`, c("Infection naive", "Previously infected (Pre-Omicron)"))][
+      `Infection history` != "Previously infected (Omicron)"] |>
   ggplot() +
   geom_boxplot(
     outlier.shape = NA,
@@ -368,7 +393,8 @@ p_mu_p <- dt_peak_switch[, Wave := fct_relevel(Wave, "Delta")][
 
 p_mu_s <- dt_peak_switch[, Wave := fct_relevel(Wave, "Delta")][
   , `Infection history` := fct_relevel(
-    `Infection history`, c("Infection naive", "Previously infected (Pre-Omicron)"))] |>
+    `Infection history`, c("Infection naive", "Previously infected (Pre-Omicron)"))][
+      `Infection history` != "Previously infected (Omicron)"] |>
   ggplot() +
   geom_boxplot(
     outlier.shape = NA,
@@ -386,141 +412,145 @@ p_mu_s <- dt_peak_switch[, Wave := fct_relevel(Wave, "Delta")][
         axis.text.x = element_text(angle = 45, vjust = 0.5)) +
   labs(x = "Model type", y = "Titre value at set-point")
 
-apply_model <- function(data, formula, points, model_func, model_type) {
-  # Apply the model function based on the provided model type
-  data[, .(Model = list(model_func(.SD, formula, points))), by = .(titre_type, infection_history)]
-}
+#--- Comparison of Bayesian modelled estimates to loess() and lm() methods
+#--- Removed for brevity and simplicity but code kept for anyone interested
+#--- Bayesian method
 
-# Recover names generalized function
-recover_names <- function(model_list) {
-  recover_covariate_names_frequentist(model_list)
-}
-
-# Combine results into a single data.table
-combine_results <- function(model_list) {
-  rbindlist(model_list$Model, use.names = TRUE)
-}
-
-# Model formulas and points
-formula <-  titre ~ t_since_last_exp
-points <-  150
-critical_value <- qnorm(0.975)
-
-# List of datasets
-datasets <- list(
-  delta_trunc = dt_delta_trunc,
-  delta_full = dt_delta_full,
-  ba2_trunc = dt_ba2_trunc,
-  ba2_full = dt_ba2_full,
-  xbb_trunc = dt_xbb_trunc,
-  xbb_full = dt_xbb_full
-)
-
-# Process models with clear identification of model type
-results_list <- list()
-model_types <- c("loess", "lm")  # Define model types for clarity
-for (dataset_name in names(datasets)) {
-  for (model_type in model_types) {
-    model_func <- if (model_type == "lm") lm_wrapper_dt else loess_wrapper_dt
-    model_name <- sprintf("%s_%s", sub("_", "", dataset_name), model_type)
-    results_list[[model_name]] <- apply_model(datasets[[dataset_name]], formula, points, model_func, model_type)
-    results_list[[model_name]] <- recover_names(results_list[[model_name]])
-  }
-}
-
-# Combine results
-combined_results <- lapply(results_list, combine_results)
-
-assign_wave_type <- function(dt, name) {
-  # Extract the base wave name and model type from the name
-  wave <- sub("^(.*)_(loess|lm)$", "\\1", name)  # Extract base name before _loess or _lm
-  wave <- gsub("trunc|full", "", wave)  # Clean the wave name by removing trunc or full
-  model_type <- if (grepl("_loess", name)) "loess" else "lm"  # Determine model type based on name suffix
-
-  # Map to formal wave names
-  wave <- switch(wave, delta = "Delta", ba2 = "BA.2", xbb = "XBB", wave)
-
-  type <- if (grepl("trunc", name)) "Real-time" else "Retrospective"
-
-  # Assign extracted information to the data.table
-  dt[, `:=` (Wave = wave, Type = type, Model_Type = model_type)]
-  return(dt)
-}
-
-# Combine all results and assign wave and type
-dt_freq_models <- rbindlist(lapply(names(combined_results), function(name) {
-  assign_wave_type(combined_results[[name]], name)
-}), use.names = TRUE)
-
-# dt_freq_models |>
-#   ggplot() +
-#   geom_ribbon(aes(x = t_since_last_exp, ymin = lwr, ymax = upr, fill = titre_type)) +
-#   facet_grid(Model_Type + infection_history + Type ~ Wave + titre_type, scales = "free") +
-#   scale_y_continuous(trans = "log2")
-
-# Define a function to extract parameters and subset specific columns
-extract_and_subset <- function(fit, data, data_stan, formula, type) {
-  extract_parameters_pop_clean(
-    fit = fit, data, data, data_stan, formula, format = "wide"
-  )[, .(t0_pop, tp_pop, ts_pop, `Infection history`, `Titre type`)]
-}
-
-# Define a function to calculate means and tag with additional info
-calculate_means <- function(data, wave, type) {
-  data[, .(
-    t0_pop_mean = mean(t0_pop),
-    tp_pop_mean = mean(tp_pop),
-    ts_pop_mean = mean(ts_pop)),
-       by = .(`Titre type`, `Infection history`)
-  ][, `:=` (Wave = wave, Type = type)]
-}
-
-# List of scenarios to loop through
-scenarios <- list(
-  delta_trunc = list(fit = fit_delta_trunc, data = dt_delta_trunc, stan_data = stan_data_delta_trunc, wave = "Delta", type = "Real-time"),
-  delta_full = list(fit = fit_delta_full, data = dt_delta_full, stan_data = stan_data_delta_full, wave = "Delta", type = "Retrospective"),
-  ba2_trunc = list(fit = fit_ba2_trunc, data = dt_ba2_trunc, stan_data = stan_data_ba2_trunc, wave = "BA.2", type = "Real-time"),
-  ba2_full = list(fit = fit_ba2_full, data = dt_ba2_full, stan_data = stan_data_ba2_full, wave = "BA.2", type = "Retrospective"),
-  xbb_trunc = list(fit = fit_xbb_trunc, data = dt_xbb_trunc, stan_data = stan_data_xbb_trunc, wave = "XBB", type = "Real-time"),
-  xbb_full = list(fit = fit_xbb_full, data = dt_xbb_full, stan_data = stan_data_xbb_full, wave = "XBB", type = "Retrospective")
-)
-
-# Loop through each scenario, extract parameters, and calculate means
-results <- lapply(scenarios, function(s) {
-  params <- extract_and_subset(s$fit, s$data, s$stan_data, covariate_formula, "wide")
-  calculate_means(params, s$wave, s$type)
-})
-
-# Combine all results into a single data.table
-dt_t_values <- rbindlist(results)
-
-dt_t_values_lm <- copy(dt_t_values)
-dt_t_values_loess <- copy(dt_t_values)
-
-dt_t_values <- rbind(
-  dt_t_values_lm[, `Model Type` := "lm"],
-  dt_t_values_loess[, `Model Type` := "loess"])
-
-setnames(
-  dt_freq_models,
-  c("titre_type", "infection_history", "fit", "lwr", "upr", "Model_Type"),
-  c("Titre type", "Infection history", "me", "lo", "hi", "Model Type"))
-
-dt_freq_models_t_merged <- merge(
-  dt_freq_models, dt_t_values,
-  by = c("Titre type", "Wave", "Infection history", "Type", "Model Type"))
-
-dt_0 <- dt_freq_models_t_merged[
-  , .SD[t_since_last_exp == 0],
-  by = .(`Titre type`, Wave, `Infection history`, Type, `Model Type`)]
-
-dt_p <- dt_freq_models_t_merged[
-  , .SD[which.min(abs(t_since_last_exp - tp_pop_mean))],
-  by = .(`Titre type`, Wave, `Infection history`, Type, `Model Type`)]
-
-dt_s <- dt_freq_models_t_merged[
-  , .SD[which.min(abs(t_since_last_exp - ts_pop_mean))],
-  by = .(`Titre type`, Wave, `Infection history`, Type, `Model Type`)]
+# apply_model <- function(data, formula, points, model_func, model_type) {
+#   # Apply the model function based on the provided model type
+#   data[, .(Model = list(model_func(.SD, formula, points))), by = .(titre_type, infection_history)]
+# }
+#
+# # Recover names generalized function
+# recover_names <- function(model_list) {
+#   recover_covariate_names_frequentist(model_list)
+# }
+#
+# # Combine results into a single data.table
+# combine_results <- function(model_list) {
+#   rbindlist(model_list$Model, use.names = TRUE)
+# }
+#
+# # Model formulas and points
+# formula <-  titre ~ t_since_last_exp
+# points <-  150
+# critical_value <- qnorm(0.975)
+#
+# # List of datasets
+# datasets <- list(
+#   delta_trunc = dt_delta_trunc,
+#   delta_full = dt_delta_full,
+#   ba2_trunc = dt_ba2_trunc,
+#   ba2_full = dt_ba2_full,
+#   xbb_trunc = dt_xbb_trunc,
+#   xbb_full = dt_xbb_full
+# )
+#
+# # Process models with clear identification of model type
+# results_list <- list()
+# model_types <- c("loess", "lm")  # Define model types for clarity
+# for (dataset_name in names(datasets)) {
+#   for (model_type in model_types) {
+#     model_func <- if (model_type == "lm") lm_wrapper_dt else loess_wrapper_dt
+#     model_name <- sprintf("%s_%s", sub("_", "", dataset_name), model_type)
+#     results_list[[model_name]] <- apply_model(datasets[[dataset_name]], formula, points, model_func, model_type)
+#     results_list[[model_name]] <- recover_names(results_list[[model_name]])
+#   }
+# }
+#
+# # Combine results
+# combined_results <- lapply(results_list, combine_results)
+#
+# assign_wave_type <- function(dt, name) {
+#   # Extract the base wave name and model type from the name
+#   wave <- sub("^(.*)_(loess|lm)$", "\\1", name)  # Extract base name before _loess or _lm
+#   wave <- gsub("trunc|full", "", wave)  # Clean the wave name by removing trunc or full
+#   model_type <- if (grepl("_loess", name)) "loess" else "lm"  # Determine model type based on name suffix
+#
+#   # Map to formal wave names
+#   wave <- switch(wave, delta = "Delta", ba2 = "BA.2", xbb = "XBB", wave)
+#
+#   type <- if (grepl("trunc", name)) "Real-time" else "Retrospective"
+#
+#   # Assign extracted information to the data.table
+#   dt[, `:=` (Wave = wave, Type = type, Model_Type = model_type)]
+#   return(dt)
+# }
+#
+# # Combine all results and assign wave and type
+# dt_freq_models <- rbindlist(lapply(names(combined_results), function(name) {
+#   assign_wave_type(combined_results[[name]], name)
+# }), use.names = TRUE)
+#
+# # dt_freq_models |>
+# #   ggplot() +
+# #   geom_ribbon(aes(x = t_since_last_exp, ymin = lwr, ymax = upr, fill = titre_type)) +
+# #   facet_grid(Model_Type + infection_history + Type ~ Wave + titre_type, scales = "free") +
+# #   scale_y_continuous(trans = "log2")
+#
+# # Define a function to extract parameters and subset specific columns
+# extract_and_subset <- function(fit, data, data_stan, formula, type) {
+#   extract_parameters_pop_clean(
+#     fit = fit, data, data, data_stan, formula, format = "wide"
+#   )[, .(t0_pop, tp_pop, ts_pop, `Infection history`, `Titre type`)]
+# }
+#
+# # Define a function to calculate means and tag with additional info
+# calculate_means <- function(data, wave, type) {
+#   data[, .(
+#     t0_pop_mean = mean(t0_pop),
+#     tp_pop_mean = mean(tp_pop),
+#     ts_pop_mean = mean(ts_pop)),
+#        by = .(`Titre type`, `Infection history`)
+#   ][, `:=` (Wave = wave, Type = type)]
+# }
+#
+# # List of scenarios to loop through
+# scenarios <- list(
+#   delta_trunc = list(fit = fit_delta_trunc, data = dt_delta_trunc, stan_data = stan_data_delta_trunc, wave = "Delta", type = "Real-time"),
+#   delta_full = list(fit = fit_delta_full, data = dt_delta_full, stan_data = stan_data_delta_full, wave = "Delta", type = "Retrospective"),
+#   ba2_trunc = list(fit = fit_ba2_trunc, data = dt_ba2_trunc, stan_data = stan_data_ba2_trunc, wave = "BA.2", type = "Real-time"),
+#   ba2_full = list(fit = fit_ba2_full, data = dt_ba2_full, stan_data = stan_data_ba2_full, wave = "BA.2", type = "Retrospective"),
+#   xbb_trunc = list(fit = fit_xbb_trunc, data = dt_xbb_trunc, stan_data = stan_data_xbb_trunc, wave = "XBB", type = "Real-time"),
+#   xbb_full = list(fit = fit_xbb_full, data = dt_xbb_full, stan_data = stan_data_xbb_full, wave = "XBB", type = "Retrospective")
+# )
+#
+# # Loop through each scenario, extract parameters, and calculate means
+# results <- lapply(scenarios, function(s) {
+#   params <- extract_and_subset(s$fit, s$data, s$stan_data, covariate_formula, "wide")
+#   calculate_means(params, s$wave, s$type)
+# })
+#
+# # Combine all results into a single data.table
+# dt_t_values <- rbindlist(results)
+#
+# dt_t_values_lm <- copy(dt_t_values)
+# dt_t_values_loess <- copy(dt_t_values)
+#
+# dt_t_values <- rbind(
+#   dt_t_values_lm[, `Model Type` := "lm"],
+#   dt_t_values_loess[, `Model Type` := "loess"])
+#
+# setnames(
+#   dt_freq_models,
+#   c("titre_type", "infection_history", "fit", "lwr", "upr", "Model_Type"),
+#   c("Titre type", "Infection history", "me", "lo", "hi", "Model Type"))
+#
+# dt_freq_models_t_merged <- merge(
+#   dt_freq_models, dt_t_values,
+#   by = c("Titre type", "Wave", "Infection history", "Type", "Model Type"))
+#
+# dt_0 <- dt_freq_models_t_merged[
+#   , .SD[t_since_last_exp == 0],
+#   by = .(`Titre type`, Wave, `Infection history`, Type, `Model Type`)]
+#
+# dt_p <- dt_freq_models_t_merged[
+#   , .SD[which.min(abs(t_since_last_exp - tp_pop_mean))],
+#   by = .(`Titre type`, Wave, `Infection history`, Type, `Model Type`)]
+#
+# dt_s <- dt_freq_models_t_merged[
+#   , .SD[which.min(abs(t_since_last_exp - ts_pop_mean))],
+#   by = .(`Titre type`, Wave, `Infection history`, Type, `Model Type`)]
 
 dt_bayesian_estimates[variable == "mu_0", `Time point` := "Time of exposure"]
 dt_bayesian_estimates[variable == "mu_p", `Time point` := "Time of peak"]
@@ -528,17 +558,23 @@ dt_bayesian_estimates[variable == "mu_s", `Time point` := "Time of set point"]
 
 dt_bayesian_estimates[, variable := NULL]
 
-dt_freq <- rbind(
-  dt_0[, `Time point` := "Time of exposure"],
-  dt_p[, `Time point` := "Time of peak"],
-  dt_s[, `Time point` := "Time of set point"])
+#--- Uncomment the line below for the lm() and loess() estimates to be included
+# dt_freq <- rbind(
+#   dt_0[, `Time point` := "Time of exposure"],
+#   dt_p[, `Time point` := "Time of peak"],
+#   dt_s[, `Time point` := "Time of set point"])
+#
+# dt_freq[, t_since_last_exp := NULL]
+# dt_freq[, t0_pop_mean := NULL]
+# dt_freq[, tp_pop_mean := NULL]
+# dt_freq[, ts_pop_mean := NULL]
 
-dt_freq[, t_since_last_exp := NULL]
-dt_freq[, t0_pop_mean := NULL]
-dt_freq[, tp_pop_mean := NULL]
-dt_freq[, ts_pop_mean := NULL]
+#--- Uncomment the line below for the lm() and loess() estimates to be included
+# dt_model_comparison <- rbind(dt_bayesian_estimates, dt_freq) |>
+#   relevel_factors_for_plots()
 
-dt_model_comparison <- rbind(dt_bayesian_estimates, dt_freq) |>
+#--- Comment this line out for the lm() and loess() estimates to be included
+dt_model_comparison <- dt_bayesian_estimates |>
   relevel_factors_for_plots()
 
 p_figure_3 <- ggplot(dt_model_comparison[`Time point` == "Time of peak"][
@@ -548,14 +584,14 @@ p_figure_3 <- ggplot(dt_model_comparison[`Time point` == "Time of peak"][
         , Wave := fct_relevel(Wave, "Delta wave")][
           , `Infection history` := fct_relevel(
             `Infection history`, c("Infection naive", "Previously infected (Pre-Omicron)"))][
-            `Infection history` != "Previously infected (Omicron)"],
-  aes(x = interaction(Type, `Model Type`, sep = " - "), y = me, ymin = lo, ymax = hi, colour = `Model Type`)) +
+              `Infection history` != "Previously infected (Omicron)"][`Model Type` == "Bayesian"],
+  aes(x = interaction(Type, sep = " - "), y = me, ymin = lo, ymax = hi,
+      colour = `Type`)) +
   geom_pointrange() +
   geom_hline(
-    data = dt_model_comparison[
-      `Model Type` == "Bayesian" & Type == "Retrospective" &
-        `Time point` == "Time of peak"][
-          `Infection history` != "Previously infected (Omicron)"],
+    data = dt_model_comparison[`Time point` == "Time of peak"][
+      `Model Type` == "Bayesian" & Type == "Retrospective"][
+        `Infection history` != "Previously infected (Omicron)"],
     aes(yintercept = me), linetype = "dashed", alpha = 0.5) +
   scale_y_continuous(
     trans = "log2",
@@ -566,10 +602,10 @@ p_figure_3 <- ggplot(dt_model_comparison[`Time point` == "Time of peak"][
   theme(strip.background = element_rect(fill = "white"),
         strip.text = element_text(colour = "black"),
         axis.text.x = element_text(angle = 45, vjust = 0.5),
-        legend.position = "bottom") +
-  labs(title = "Difference between retrospective and real-time fits at peak titre by model type",
+        legend.position = "none") +
+  labs(title = "Difference between retrospective and real-time fits at peak titre",
        tag = "B",
-       x = "Model type", y = "Titre value at peak") +
+       x = "Model type", y = expression(paste("Titre at peak (", IC[50], ")"))) +
   scale_x_discrete(labels = function(x) sapply(strsplit(x, " - "), `[`, 1))
 
 p_sX <- ggplot(dt_model_comparison[
@@ -597,11 +633,12 @@ p_sX <- ggplot(dt_model_comparison[
   labs(x = "Model type", y = "Titre value") +
   scale_x_discrete(labels = function(x) sapply(strsplit(x, " - "), `[`, 1))
 
-p_figure_3_all <- cowplot::plot_grid(p2, p_figure_3, ncol = 1, rel_heights = c(1, 1.2))
+p_figure_3_all <- cowplot::plot_grid(
+  p2, p_figure_3, ncol = 1, rel_heights = c(1, 1))
 
 # Saving main figure --- just peak titre values
 ggsave("outputs/figures/figure_3.png", p_figure_3_all, width = 10, height = 12)
-ggsave("outputs/figures/figure_3.pdf", p_figure_3_all, width = 10, height = 12)
+ggsave("outputs/figures/figure_3.svg", p_figure_3_all, width = 10, height = 12)
 
 # Saving supplementary figure with all three time points
 ggsave(
@@ -609,11 +646,7 @@ ggsave(
   p_sX, width = 13, height = 13)
 
 ggsave(
-  "outputs/figures/supplementary_figures/realtime_vs_retrospective.eps",
-  p_sX, width = 13, height = 13)
-
-ggsave(
-  "outputs/figures/supplementary_figures/realtime_vs_retrospective.pdf",
+  "outputs/figures/supplementary_figures/realtime_vs_retrospective.svg",
   p_sX, width = 13, height = 13)
 
 

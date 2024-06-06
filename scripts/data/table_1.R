@@ -9,9 +9,9 @@ source("scripts/inference/no_exposures.R")
 #------------------------------------------------#
 
 dt_all_data_table <- copy(rbind(
-  dt_delta_data_full[, Wave := "Delta"],
-  dt_ba2_data_full[, Wave := "BA.2"],
-  dt_xbb_data_full[, Wave := "XBB"]))
+  dt_delta_full[, Wave := "Delta"],
+  dt_ba2_full[, Wave := "BA.2"],
+  dt_xbb_full[, Wave := "XBB"]))
 
 # Loading the full data object - NOT publicly available
 load("data/Legacy_DataAnnotatedDateSeries_2023-11-09.RData")
@@ -302,3 +302,8 @@ dt_setpoint_diff_2_wide[, .(
   me = signif(quantile(value, 0.5), 3),
   lo = signif(quantile(value, 0.025), 3),
   hi = signif(quantile(value, 0.975), 3))]
+
+# The number of censored samples (lower and upper) for Table 1
+dt_all_data_table[censored == 1, .N, .(censored, Wave, titre_type)]
+
+

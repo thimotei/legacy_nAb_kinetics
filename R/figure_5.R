@@ -1,8 +1,13 @@
 plot_figure_5 <- function(
-    dt_data, dt_model, dt_dates, plot_data = TRUE,
+    dt_data, dt_model, dt_dates,
+    plot_data = TRUE,
+    plot_model = TRUE,
     plot_model_splines = TRUE,
-    alpha_splines = 0.1, alpha_model = 1,
-    alpha_model_smooth = 1, span_model) {
+    plot_raw_data_splines = FALSE,
+    alpha_splines = 0.1,
+    alpha_model = 1,
+    alpha_model_smooth = 1,
+    span_model) {
 
   #--- Munging raw data for plot
   dt_data <- dt_data[dt_dates, on = "Wave"]
@@ -28,6 +33,10 @@ plot_figure_5 <- function(
     dt_dates_model, on = "Wave"][
       , .SD[calendar_date <= date_wave_next], by = Wave]
 
+  dt_data_plot <- dt_data_plot[
+    dt_dates_model, on = "Wave"][
+      , .SD[date <= date_wave_next], by = Wave]
+
   p_out <- ggplot() +
     geom_hline(
       data = dt_data_plot,
@@ -46,14 +55,17 @@ plot_figure_5 <- function(
       labels = c(expression(""<=40),
                  "80", "160", "320", "640", "1280",
                  expression("">=2560)),
-      limits = c(30, 5000)) +
-    geom_line(
-      data = dt_model_plot,
-      aes(x = calendar_date,
-          y = me,
-          group = interaction(`Titre type`, Wave)),
-      colour = "grey",
-      alpha = alpha_model) +
+      limits = c(30, 5000))
+
+  if(plot_model == TRUE) {
+    p_out <- p_out +
+      geom_line(
+        data = dt_model_plot,
+        aes(x = calendar_date,
+            y = me,
+            group = interaction(`Titre type`, Wave),
+            colour = `Titre type`),
+        alpha = alpha_model) +
     geom_ribbon(
       data = dt_model_plot,
       aes(x = calendar_date,
@@ -61,6 +73,16 @@ plot_figure_5 <- function(
           ymax = hi,
           group = interaction(`Titre type`, Wave)),
       alpha = alpha_model)
+  }
+
+  if(plot_raw_data_splines == TRUE) {
+    p_out <- p_out +
+      geom_smooth(
+        data = dt_data_plot,
+        aes(x = date, y = titre, colour = `Titre type`,
+            group = interaction(`Titre type`, Wave)),
+        alpha = 0.2)
+  }
 
   if(plot_model_splines == TRUE) {
     p_out <- p_out +

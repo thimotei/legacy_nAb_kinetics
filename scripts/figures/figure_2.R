@@ -144,126 +144,149 @@ p_figure_2_a <- build_figure_2(
 #---------------#
 
 # Delta fits
-dt_ind_traj_sum_delta <- simulate_and_sum_ind(
-  fit_delta_full, dt_delta_full,
-  n_draws = 1000, wave_manual = "Delta",
-  scale = "log", adjust_dates = FALSE,
-  time_shift = 0, t_max = 150, covariate_formula)
+# dt_ind_traj_sum_delta <- simulate_and_sum_ind(
+#   fit_delta_full, dt_delta_full,
+#   n_draws = 1000, wave_manual = "Delta",
+#   scale = "log", adjust_dates = FALSE,
+#   time_shift = 0, t_max = 150, covariate_formula)
+#
+# dt_delta_full_stan_plot <- convert_log_scale_inverse(
+#   copy(dt_delta_full), vars_to_transform = "titre") |>
+#   clean_covariate_names(
+#     formula_val = covariate_formula,
+#     cleaned_names = c("Infection history", "Titre type"))
+#
+# # BA.2 fits
+# dt_ind_traj_sum_ba2 <- simulate_and_sum_ind(
+#   fit_ba2_full, dt_ba2_full,
+#   n_draws = 1000, wave_manual = "BA.2",
+#   scale = "log", adjust_dates = FALSE,
+#   time_shift = 0, t_max = 150, covariate_formula)
+#
+# dt_ba2_full_stan_plot <- convert_log_scale_inverse(
+#   copy(dt_ba2_full), vars_to_transform = "titre") |>
+#   clean_covariate_names(
+#     formula_val = covariate_formula,
+#     cleaned_names = c("Infection history", "Titre type"))
+#
+# # XBB fits
+# dt_ind_traj_sum_xbb <- simulate_and_sum_ind(
+#   fit_xbb_full, dt_xbb_full,
+#   n_draws = 1000, wave_manual = "XBB",
+#   scale = "log", adjust_dates = FALSE,
+#   time_shift = 0, t_max = 150, covariate_formula)
+#
+# dt_xbb_full_stan_plot <- convert_log_scale_inverse(
+#   copy(dt_xbb_full), vars_to_transform = "titre") |>
+#   clean_covariate_names(
+#     formula_val = covariate_formula,
+#     cleaned_names = c("Infection history", "Titre type"))
+#
+# dt_ind_fits_plot <- rbind(
+#   dt_ind_traj_sum_delta,
+#   dt_ind_traj_sum_ba2,
+#   dt_ind_traj_sum_xbb) |>
+#   relevel_factors_for_plots()
+#
+# dt_ind_data_plot <- rbind(
+#   dt_delta_full_stan_plot[, Wave := "Delta"],
+#   dt_ba2_full_stan_plot[, Wave := "BA.2"],
+#   dt_xbb_full_stan_plot[, Wave := "XBB"]) |>
+#   relevel_factors_for_plots()
 
-dt_delta_full_stan_plot <- convert_log_scale_inverse(
-  copy(dt_delta_full), vars_to_transform = "titre") |>
-  clean_covariate_names(
-    formula_val = covariate_formula,
-    cleaned_names = c("Infection history", "Titre type"))
+#--- Need the individual IDs to build panel B of this figure, which are not
+#--- publicly available. We provide the code used to build this panel. Replace
+#--- "id", with "stan_id" which is publicly available for a similar figure.
+#--- We also provide all of the individual-level fits in the supplementary
+#--- material.
+# Choosing 3 individuals with exposures in all three waves
+# id_wave_count <- dt_ind_fits_plot[, .(NumWaves = uniqueN(Wave)), by = id]
 
-# BA.2 fits
-dt_ind_traj_sum_ba2 <- simulate_and_sum_ind(
-  fit_ba2_full, dt_ba2_full,
-  n_draws = 1000, wave_manual = "BA.2",
-  scale = "log", adjust_dates = FALSE,
-  time_shift = 0, t_max = 150, covariate_formula)
+# Hard-coded IDs used in Figure 2. Chosen as they have nice coverage over
+# time period. All individual-level trajectories are in the supplementary
+# material. These IDs have been removed from the public dataset for anonymity.
+# Only exposure-specific IDs are publicly available
+# ids_plot <- c(369, 588, 809)
 
-dt_ba2_full_stan_plot <- convert_log_scale_inverse(
-  copy(dt_ba2_full), vars_to_transform = "titre") |>
-  clean_covariate_names(
-    formula_val = covariate_formula,
-    cleaned_names = c("Infection history", "Titre type"))
-
-# XBB fits
-dt_ind_traj_sum_xbb <- simulate_and_sum_ind(
-  fit_xbb_full, dt_xbb_full,
-  n_draws = 1000, wave_manual = "XBB",
-  scale = "log", adjust_dates = FALSE,
-  time_shift = 0, t_max = 150, covariate_formula)
-
-dt_xbb_full_stan_plot <- convert_log_scale_inverse(
-  copy(dt_xbb_full), vars_to_transform = "titre") |>
-  clean_covariate_names(
-    formula_val = covariate_formula,
-    cleaned_names = c("Infection history", "Titre type"))
-
-dt_ind_fits_plot <- rbind(
-  dt_ind_traj_sum_delta,
-  dt_ind_traj_sum_ba2,
-  dt_ind_traj_sum_xbb) |>
-  relevel_factors_for_plots()
-
-dt_ind_data_plot <- rbind(
-  dt_delta_full_stan_plot,
-  dt_ba2_full_stan_plot,
-  dt_xbb_full_stan_plot) |>
-  relevel_factors_for_plots(wave = FALSE)
-
-# Choosing 4 individuals with exposures in all three waves
-id_wave_count <- dt_ind_fits_plot[, .(NumWaves = uniqueN(Wave)), by = id]
-ids_plot <- id_wave_count[
-  NumWaves == 3, .(id = id)][id %in% sample(id, 3), id]
-
-dt_ind_fits_plot_subset <- dt_ind_fits_plot[
-  id %in% ids_plot][
-  , plot_id := .GRP, by = id][
-  , plot_id := factor(paste0("Individual ", plot_id))]
-
-dt_ind_data_plot_subset <- dt_ind_data_plot[
-  id %in% ids_plot][
-  , plot_id := .GRP, by = id][
-  , plot_id := factor(paste0("Individual ", plot_id))]
-
-# Plotting panel B
-p_ind <- dt_ind_fits_plot_subset |>
-  ggplot() +
-  geom_line(
-    aes(x = calendar_date, y = me,
-        colour = `Titre type`,
-        group = interaction(`Titre type`, Wave)),
-    linetype = "solid") +
-  geom_ribbon(
-    aes(x = calendar_date,
-        ymin = lo, ymax = hi,
-        fill = `Titre type`,
-        group = interaction(`Titre type`, Wave)),
-    alpha = 0.5) +
-  geom_point(
-    data = dt_ind_data_plot_subset,
-    aes(x = date, y = titre, colour = `Titre type`), size = 1.5) +
-  geom_vline(data = dt_ind_data_plot_subset,
-             aes(xintercept = relevant_last_exp_date),
-             linetype = "dashed", colour = "gray30", alpha = 0.5) +
-  geom_hline(yintercept = 40, linetype = "dashed", colour = "gray30", alpha = 0.2) +
-  geom_hline(yintercept = 2560, linetype = "dashed", colour = "gray30", alpha = 0.2) +
-  scale_x_date(
-    date_labels = "%b-%y") +
-  scale_y_continuous(
-    trans = "log2",
-    breaks = c(40, 160, 640, 2560),
-    labels = c("40", "160", "640", "2560")) +
-  theme_linedraw() +
-  theme(legend.position = "right",
-        text = element_text(size = 8, family = "Helvetica"),
-        strip.background = element_rect(fill = "white"),
-        strip.text = element_text(colour = 'black'),
-        strip.placement = "outside",
-        plot.title = element_text(face = "bold", size = 9),
-        panel.grid = element_line(linewidth = 0.4)) +
-  guides(fill = guide_legend(nrow = 2, byrow = TRUE)) +
-  scale_shape_manual(values = c(1, 2, 3)) +
-  labs(x = "Date",
-       y = expression(paste("Titre value (IC"[50], ")")),
-       tag = "B",
-       title = "Individual-level fits") +
-  scale_colour_manual(values = manual_pal) +
-  scale_fill_manual(values = manual_pal) +
-  guides(colour = guide_legend(
-    override.aes = list(alpha = 1, size = 1))) +
-  facet_grid(plot_id ~ Wave, scales = "free")
+# Choosing 3 random exposure-specific IDs with an exposure in each of the three waves
+# ids_plot <- id_wave_count[
+#   NumWaves == 3, .(id = stan_id)][stan_id %in% sample(stan_id, 3), id]
+#
+# dt_next_wave_date <- data.table(
+#   Wave = c("Delta wave", "BA.2 wave", "XBB wave"),
+#   current_wave_date = c(date_delta, date_ba2, date_xbb),
+#   next_wave_date = c(date_ba2, date_xbb, date_xbb))
+#
+# dt_ind_fits_plot <- merge(dt_ind_fits_plot, dt_next_wave_date, by = "Wave")
+# dt_ind_data_plot <- merge(dt_ind_data_plot, dt_next_wave_date, by = "Wave")
+#
+# dt_ind_fits_plot_subset <- dt_ind_fits_plot[
+#   id %in% ids_plot][
+#   , plot_id := .GRP, by = id][
+#   , .SD[calendar_date <= next_wave_date], by = .(plot_id, Wave)][
+#   , plot_id := factor(paste0("Individual ", plot_id))]
+#
+# dt_ind_data_plot_subset <- dt_ind_data_plot[
+#   id %in% ids_plot][
+#   , plot_id := .GRP, by = id][
+#   , .SD[date >= relevant_last_exp_date & date <= next_wave_date], by = .(plot_id, Wave)][
+#   , plot_id := factor(paste0("Individual ", plot_id))]
+#
+# # Plotting panel B
+# p_ind <- dt_ind_fits_plot_subset |>
+#   ggplot() +
+#   geom_line(
+#     aes(x = calendar_date, y = me,
+#         colour = `Titre type`,
+#         group = interaction(`Titre type`, Wave)),
+#     linetype = "solid") +
+#   geom_ribbon(
+#     aes(x = calendar_date,
+#         ymin = lo, ymax = hi,
+#         fill = `Titre type`,
+#         group = interaction(`Titre type`, Wave)),
+#     alpha = 0.5) +
+#   geom_point(
+#     data = dt_ind_data_plot_subset,
+#     aes(x = date, y = titre, colour = `Titre type`), size = 1.5) +
+#   geom_vline(data = dt_ind_data_plot_subset,
+#              aes(xintercept = relevant_last_exp_date),
+#              linetype = "dashed", colour = "gray30", alpha = 0.5) +
+#   geom_hline(yintercept = 40, linetype = "dashed", colour = "gray30", alpha = 0.2) +
+#   geom_hline(yintercept = 2560, linetype = "dashed", colour = "gray30", alpha = 0.2) +
+#   scale_x_date(
+#     date_labels = "%b-%y") +
+#   scale_y_continuous(
+#     trans = "log2",
+#     breaks = c(40, 160, 640, 2560),
+#     labels = c("40", "160", "640", "2560")) +
+#   theme_linedraw() +
+#   theme(legend.position = "right",
+#         text = element_text(size = 8, family = "Helvetica"),
+#         strip.background = element_rect(fill = "white"),
+#         strip.text = element_text(colour = 'black'),
+#         strip.placement = "outside",
+#         plot.title = element_text(face = "bold", size = 9),
+#         panel.grid = element_line(linewidth = 0.4)) +
+#   guides(fill = guide_legend(nrow = 2, byrow = TRUE)) +
+#   scale_shape_manual(values = c(1, 2, 3)) +
+#   labs(x = "Date",
+#        y = expression(paste("Titre value (IC"[50], ")")),
+#        tag = "B",
+#        title = "Individual-level fits") +
+#   scale_colour_manual(values = manual_pal) +
+#   scale_fill_manual(values = manual_pal) +
+#   guides(colour = guide_legend(
+#     override.aes = list(alpha = 1, size = 1))) +
+#   facet_grid(plot_id ~ Wave, scales = "free")
 
 p_figure_2 <- plot_grid(
   p_figure_2_a,
-  p_ind,
+  # p_ind,
   rel_heights = c(1, 0.8),
   ncol = 1)
 
-ggsave("outputs/figures/figure_2.pdf",
+ggsave("outputs/figures/figure_2.svg",
        p_figure_2,
        width = 12,
        height = 10)

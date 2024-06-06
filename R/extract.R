@@ -3,7 +3,7 @@ extract_parameters_pop <- function(
       "t0_pop[k]", "tp_pop[k]", "ts_pop[k]", "m1_pop[k]", "m2_pop[k]",
       "m3_pop[k]", "beta_t0[p]", "beta_tp[p]", "beta_ts[p]", "beta_m1[p]",
       "beta_m2[p]", "beta_m3[p]"),
-    adjust = TRUE, add_variation_params = FALSE) {
+    adjust = TRUE, add_variation_params = FALSE, n_draws = 2500) {
 
   if(add_variation_params == TRUE) {
     pop_var_params <- c(
@@ -27,6 +27,8 @@ extract_parameters_pop <- function(
   } else {
     dt_out <- dt_proc
   }
+
+  dt_proc <- dt_proc[.draw %in% n_draws]
 
   return(dt_out)
 }
