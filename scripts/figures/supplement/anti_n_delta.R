@@ -2,6 +2,8 @@
 # when anti-N data is included in the determination of individuals infection
 # history
 
+# This dataset is not publicly available
+
 # Replicating preprocessing data script with anti-N included --------------
 library(ggh4x)
 library(cmdstanr)
