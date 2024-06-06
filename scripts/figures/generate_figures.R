@@ -26,6 +26,9 @@ sourceCpp("cpp/simulate_trajectories_old.cpp")
 sourceCpp("cpp/convert_log_scale_inverse.cpp")
 
 # Load data ---------------------------------------------------------------
+
+# These two data objects are not currently publicly available
+# All of the others are
 dt_inf <- fread("data/infections.rds")
 dt_vax <- fread("data/vaccines.rds")
 
@@ -71,7 +74,11 @@ fit_ba2_full <- readRDS("outputs/fits/ba2_full.rds")
 fit_xbb_full <- readRDS("outputs/fits/xbb_full.rds")
 
 # Generate figures --------------------------------------------------------
+# Data for figure 1 not currently publicly available. Reduced version will
+# be made available ASAP. Currently relies on individual IDs. All other figures
+# work with the available datasets
 source("scripts/figures/figure_1.R")
+
 source("scripts/figures/figure_2.R")
 source("scripts/figures/figure_3.R")
 source("scripts/figures/figure_4.R")
