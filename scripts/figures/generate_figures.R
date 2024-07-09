@@ -74,11 +74,7 @@ fit_ba2_full <- readRDS("outputs/fits/ba2_full.rds")
 fit_xbb_full <- readRDS("outputs/fits/xbb_full.rds")
 
 # Generate figures --------------------------------------------------------
-# Data for figure 1 not currently publicly available. Reduced version will
-# be made available ASAP. Currently relies on individual IDs. All other figures
-# work with the available datasets
 source("scripts/figures/figure_1.R")
-
 source("scripts/figures/figure_2.R")
 source("scripts/figures/figure_3.R")
 source("scripts/figures/figure_4.R")

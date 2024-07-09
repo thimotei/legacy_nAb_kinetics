@@ -192,16 +192,11 @@ p_figure_1 <- plot_grid(
   ncol = 1,
   rel_widths = c(1, 1))
 
-ggsave("outputs/figures/figure_1.png",
-       p_figure_1,
-       height = 10,
-       width = 10,
+ggsave("outputs/figures/figure_1.pdf",
+       p_figure_1_panel_a,
+       height = 6,
+       width = 8,
        bg = "white")
 
-ggsave("outputs/figures/figure_1.svg",
-       p_figure_1,
-       height = 10,
-       width = 10,
-       bg = "white")
 
 

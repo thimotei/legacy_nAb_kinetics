@@ -63,7 +63,7 @@ figure_5_panel_a <- plot_figure_5(
   dt_dates = dt_dates,
   alpha_splines = 1, alpha_model = 0.2,
   alpha_model_smooth = 0.5, span_model = 0.2,
-  plot_data = FALSE, plot_model_splines = TRUE) +
+  plot_data = TRUE, plot_model_splines = TRUE) +
   labs(title = "Population-level titre values",
        tag = "A",
        x = "Date",
@@ -170,6 +170,12 @@ figure_5 <- cowplot::plot_grid(
   nrow = 3, rel_heights = c(1, 0.5, 0.75), align = "v", axis = "l")
 
 ggsave("outputs/figures/figure_5.png",
+       figure_5,
+       width = 13,
+       height = 8.5,
+       bg = "white")
+
+ggsave("outputs/figures/figure_5.pdf",
        figure_5,
        width = 13,
        height = 8.5,

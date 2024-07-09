@@ -103,11 +103,11 @@ simulate_trajectories_ind <- function(
   if(adjust_dates == FALSE) {
     dt_lookup <- dt_data[, .(
       exposure_date = min(last_exp_date)),
-      by = .(id, stan_id, infection_history)]
+      by = .(stan_id, infection_history)]
   } else if(adjust_dates == TRUE) {
     dt_lookup <- dt_data[, .(
       exposure_date = min(last_exp_date) - time_shift),
-      by = .(id, stan_id, infection_history)]
+      by = .(stan_id, infection_history)]
   }
 
   dt_out <- merge(dt_params_ind_traj, dt_lookup, by = "stan_id")
@@ -223,7 +223,7 @@ simulate_and_sum_ind <- function(
     dt_trajectories,
     column_name = "mu",
     by = c(
-      "stan_id", "id", "Infection history",
+      "stan_id", "Infection history",
       "calendar_date", "Wave", "Titre type"))
 
   convert_log_scale_inverse(dt_trajectories_sum)

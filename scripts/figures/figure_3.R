@@ -2,7 +2,7 @@
 #--- Panel A ---#
 #---------------#
 
-n_draws_a <- 16000
+n_draws_a <- 10
 
 # Processing fits
 dt_delta_plot_trunc <- process_fits(
@@ -85,7 +85,7 @@ dt_all_fits_full <- rbind(
               "BA.5 Abs", "BQ.1.1 Abs", "XBB.1.5 Abs"))]
 
 dt_all_data_plot_main <- dt_all_data_plot[
-  `Infection history` != "Previously infected (Omicron)"][
+  # `Infection history` != "Previously infected (Omicron)"][
     , `Infection history` := fct_relevel(fct_drop(
       `Infection history`),
       c("Infection naive", "Previously infected (Pre-Omicron)"))] |> unique()
@@ -172,7 +172,11 @@ p1 <- dt_fits_long_sum[, Wave := fct_relevel(Wave, "Delta wave")][
   facet_nested(`Infection history` ~ Wave + `Titre type`) +
   theme_linedraw() +
   theme(strip.background = element_rect(fill = "white"),
-    strip.text = element_text(colour = "black")) +
+        strip.text = element_text(colour = "black"),
+        text = element_text(size = 8, family = "Helvetica"),
+        strip.placement = "outside",
+        plot.title = element_text(face = "bold", size = 9),
+        panel.grid = element_line(linewidth = 0.4)) +
   labs(x = "Time (days since vaccination)", y = expression(paste("Titre (", IC[50], ")")))
 
 ggsave(
@@ -182,8 +186,7 @@ ggsave(
   height = 7,
   bg = "white")
 
-p2 <- dt_fits_wide_sum[, Wave := fct_relevel(Wave, "Delta wave")][
-  `Infection history` != "Previously infected (Omicron)"]  |>
+p2 <- dt_fits_wide_sum[, Wave := fct_relevel(Wave, "Delta wave")]  |>
   ggplot() +
   geom_line(aes(x = t, y = me)) +
   geom_ribbon(aes(x = t, ymin = lo, ymax = hi), alpha = 0.5) +
@@ -196,67 +199,78 @@ p2 <- dt_fits_wide_sum[, Wave := fct_relevel(Wave, "Delta wave")][
   facet_nested(`Infection history` ~ Wave + `Titre type`) +
   theme_linedraw() +
   theme(strip.background = element_rect(fill = "white"),
-        strip.text = element_text(colour = "black")) +
+        strip.text = element_text(colour = "black"),
+        text = element_text(size = 8, family = "Helvetica"),
+        strip.placement = "outside",
+        plot.title = element_text(face = "bold", size = 9),
+        panel.grid = element_line(linewidth = 0.4)) +
   labs(title = "Absolute difference between retrospective and real-time fits",
        tag = "A",
        x = "Time (days since vaccination)",
        y = expression(paste("Absolute difference (", log[2], IC[50], ")")))
 
-n_draws_b <- 8000
+n_draws_b <- 10
 
 #--- Processing data
 dt_delta_trunc_peak_switch <- figure_4_data(
   fit_delta_trunc, dt_delta_trunc,
   stan_data_delta_trunc, covariate_formula,
   wave_manual = "Delta wave",
+  t_manual = 60,
   cleaned_names = c("Infection history", "Titre type"),
   n_draws = n_draws_b)[
     , .(.draw, mu_0_trunc = mu_0, mu_p_trunc = mu_p, mu_s_trunc = mu_s,
-        `Infection history`, `Titre type`)]
+        mu_t_full = mu_t, `Infection history`, `Titre type`)]
 
 dt_ba2_trunc_peak_switch <- figure_4_data(
   fit_ba2_trunc, dt_ba2_trunc,
   stan_data_ba2_trunc, covariate_formula,
   wave_manual = "BA.2 wave",
+  t_manual = 76,
   cleaned_names = c("Infection history", "Titre type"),
   n_draws = n_draws_b)[
     , .(.draw, mu_0_trunc = mu_0, mu_p_trunc = mu_p, mu_s_trunc = mu_s,
-        `Infection history`, `Titre type`)]
+        mu_t_full = mu_t, `Infection history`, `Titre type`)]
 
 dt_xbb_trunc_peak_switch <- figure_4_data(
   fit_xbb_trunc, dt_xbb_trunc,
   stan_data_xbb_trunc, covariate_formula,
   wave_manual = "XBB wave",
+  t_manual = 49,
   cleaned_names = c("Infection history", "Titre type"),
   n_draws = n_draws_b)[
     , .(.draw, mu_0_trunc = mu_0, mu_p_trunc = mu_p, mu_s_trunc = mu_s,
-        `Infection history`, `Titre type`)]
+        mu_t_full = mu_t, `Infection history`, `Titre type`)]
 
 dt_delta_full_peak_switch <- figure_4_data(
   fit_delta_full, dt_delta_full,
   stan_data_delta_full, covariate_formula,
   wave_manual = "Delta wave",
+  t_manual = 60,
   cleaned_names = c("Infection history", "Titre type"),
   n_draws = n_draws_b)[
     , .(.draw, mu_0_full = mu_0, mu_p_full = mu_p, mu_s_full = mu_s,
-        `Infection history`, `Titre type`)]
+        mu_t_full = mu_t, `Infection history`, `Titre type`)]
 
 dt_ba2_full_peak_switch <- figure_4_data(
   fit_ba2_full, dt_ba2_full,
   stan_data_ba2_full, covariate_formula,
   wave_manual = "BA.2 wave",
+  t_manual = 76,
   cleaned_names = c("Infection history", "Titre type"),
   n_draws = n_draws_b)[
     , .(.draw, mu_0_full = mu_0, mu_p_full = mu_p, mu_s_full = mu_s,
-        `Infection history`, `Titre type`)]
+        mu_t_full = mu_t, `Infection history`, `Titre type`)]
 
 dt_xbb_full_peak_switch <- figure_4_data(
   fit_xbb_full, dt_xbb_full,
   stan_data_xbb_full, covariate_formula,
   wave_manual = "XBB wave",
+  t_manual = 49,
   cleaned_names = c("Infection history", "Titre type"),
   n_draws = n_draws_b)[
-    , .(.draw, mu_0_full = mu_0, mu_p_full = mu_p, mu_s_full = mu_s,
+    , .(.draw, mu_0_full = mu_0, mu_p_full = mu_p,
+        mu_s_full = mu_s, mu_t_full = mu_t,
         `Infection history`, `Titre type`)]
 
 # dt_delta_peak_switch <- merge(
@@ -278,48 +292,54 @@ dt_delta_trunc_peak_switch <- figure_4_data(
   fit_delta_trunc, dt_delta_trunc,
   stan_data_delta_trunc, covariate_formula,
   wave_manual = "Delta wave",
+  t_manual = 60,
   cleaned_names = c("Infection history", "Titre type"),
   n_draws = n_draws_b)[
-    , .(.draw,  mu_0, mu_p, mu_s, `Infection history`, `Titre type`)]
+    , .(.draw,  mu_0, mu_p, mu_s, mu_t, `Infection history`, `Titre type`)]
 
 dt_ba2_trunc_peak_switch <- figure_4_data(
   fit_ba2_trunc, dt_ba2_trunc,
   stan_data_ba2_trunc, covariate_formula,
   wave_manual = "BA.2 wave",
+  t_manual = 76,
   cleaned_names = c("Infection history", "Titre type"),
   n_draws = n_draws_b)[
-    , .(.draw, mu_0, mu_p, mu_s, `Infection history`, `Titre type`)]
+    , .(.draw, mu_0, mu_p, mu_s, mu_t, `Infection history`, `Titre type`)]
 
 dt_xbb_trunc_peak_switch <- figure_4_data(
   fit_xbb_trunc, dt_xbb_trunc,
   stan_data_xbb_trunc, covariate_formula,
   wave_manual = "XBB wave",
+  t_manual = 49,
   cleaned_names = c("Infection history", "Titre type"),
   n_draws = n_draws_b)[
-    , .(.draw, mu_0, mu_p, mu_s, `Infection history`, `Titre type`)]
+    , .(.draw, mu_0, mu_p, mu_s, mu_t, `Infection history`, `Titre type`)]
 
 dt_delta_full_peak_switch <- figure_4_data(
   fit_delta_full, dt_delta_full,
   stan_data_delta_full, covariate_formula,
   wave_manual = "Delta wave",
+  t_manual = 60,
   cleaned_names = c("Infection history", "Titre type"),
   n_draws = n_draws_b)[
-    , .(.draw, mu_0, mu_p, mu_s, `Infection history`, `Titre type`)]
+    , .(.draw, mu_0, mu_p, mu_s, mu_t, `Infection history`, `Titre type`)]
 
 dt_ba2_full_peak_switch <- figure_4_data(
   fit_ba2_full, dt_ba2_full,
   stan_data_ba2_full, covariate_formula,
+  t_manual = 76,
   wave_manual = "BA.2 wave",
   cleaned_names = c("Infection history", "Titre type"))[
-    , .(.draw, mu_0, mu_p, mu_s, `Infection history`, `Titre type`)]
+    , .(.draw, mu_0, mu_p, mu_s, mu_t, `Infection history`, `Titre type`)]
 
 dt_xbb_full_peak_switch <- figure_4_data(
   fit_xbb_full, dt_xbb_full,
   stan_data_xbb_full, covariate_formula,
+  t_manual = 49,
   wave_manual = "XBB wave",
   cleaned_names = c("Infection history", "Titre type"),
   n_draws = n_draws_b)[
-    , .(.draw, mu_0, mu_p, mu_s, `Infection history`, `Titre type`)]
+    , .(.draw, mu_0, mu_p, mu_s, mu_t, `Infection history`, `Titre type`)]
 
 dt_delta_peak_switch <- rbind(
   dt_delta_trunc_peak_switch[, Type := "Real-time"],
@@ -339,7 +359,7 @@ dt_xbb_peak_switch <- rbind(
 dt_peak_switch <- rbind(
   dt_delta_peak_switch, dt_ba2_peak_switch, dt_xbb_peak_switch)
 
-dt_peak_switch_long <- melt(dt_peak_switch, measure.vars = c("mu_0", "mu_p", "mu_s"))
+dt_peak_switch_long <- melt(dt_peak_switch, measure.vars = c("mu_0", "mu_p", "mu_s", "mu_t"))
 
 dt_bayesian_estimates <- summarise_draws(
   dt_peak_switch_long,
@@ -399,6 +419,27 @@ p_mu_s <- dt_peak_switch[, Wave := fct_relevel(Wave, "Delta")][
   geom_boxplot(
     outlier.shape = NA,
     aes(x = Type, y = mu_s, fill = `Titre type`)) +
+  # geom_boxplot(aes(x = `Wave`, y = mu_0_full, fill = `Titre type`)) +
+  scale_y_continuous(
+    trans = "log2",
+    breaks = c(40, 80, 160, 320, 640, 1280,
+               2560, 5120),
+    labels = c("40", "80", "160", "320", "640", "1280", "2560", "5120")) +
+  facet_grid(`Infection history` ~ Wave + `Titre type`, scales = "free") +
+  theme_linedraw() +
+  theme(strip.background = element_rect(fill = "white"),
+        strip.text = element_text(colour = "black"),
+        axis.text.x = element_text(angle = 45, vjust = 0.5)) +
+  labs(x = "Model type", y = "Titre value at set-point")
+
+p_mu_t <- dt_peak_switch[, Wave := fct_relevel(Wave, "Delta")][
+  , `Infection history` := fct_relevel(
+    `Infection history`, c("Infection naive", "Previously infected (Pre-Omicron)"))][
+      `Infection history` != "Previously infected (Omicron)"] |>
+  ggplot() +
+  geom_boxplot(
+    outlier.shape = NA,
+    aes(x = Type, y = mu_t, fill = `Titre type`)) +
   # geom_boxplot(aes(x = `Wave`, y = mu_0_full, fill = `Titre type`)) +
   scale_y_continuous(
     trans = "log2",
@@ -555,6 +596,7 @@ p_mu_s <- dt_peak_switch[, Wave := fct_relevel(Wave, "Delta")][
 dt_bayesian_estimates[variable == "mu_0", `Time point` := "Time of exposure"]
 dt_bayesian_estimates[variable == "mu_p", `Time point` := "Time of peak"]
 dt_bayesian_estimates[variable == "mu_s", `Time point` := "Time of set point"]
+dt_bayesian_estimates[variable == "mu_t", `Time point` := "Mean emergence time of novel VOC"]
 
 dt_bayesian_estimates[, variable := NULL]
 
@@ -577,21 +619,19 @@ dt_bayesian_estimates[, variable := NULL]
 dt_model_comparison <- dt_bayesian_estimates |>
   relevel_factors_for_plots()
 
-p_figure_3 <- ggplot(dt_model_comparison[`Time point` == "Time of peak"][
-  !(Type == "Real-time" & `Model Type` == "lm" &
-      `Infection history` == "Previously infected (Omicron)" &
-      Wave == "BA.2 wave")][
-        , Wave := fct_relevel(Wave, "Delta wave")][
-          , `Infection history` := fct_relevel(
-            `Infection history`, c("Infection naive", "Previously infected (Pre-Omicron)"))][
-              `Infection history` != "Previously infected (Omicron)"][`Model Type` == "Bayesian"],
+p_figure_3 <- ggplot(dt_model_comparison[
+  `Time point` == "Mean emergence time of novel VOC"][
+  , Wave := fct_relevel(Wave, "Delta wave")][
+  , `Infection history` := fct_relevel(
+    `Infection history`, c(
+      "Infection naive", "Previously infected (Pre-Omicron)"))][
+      `Model Type` == "Bayesian"],
   aes(x = interaction(Type, sep = " - "), y = me, ymin = lo, ymax = hi,
       colour = `Type`)) +
   geom_pointrange() +
   geom_hline(
-    data = dt_model_comparison[`Time point` == "Time of peak"][
-      `Model Type` == "Bayesian" & Type == "Retrospective"][
-        `Infection history` != "Previously infected (Omicron)"],
+    data = dt_model_comparison[`Time point` == "Mean emergence time of novel VOC"][
+      `Model Type` == "Bayesian" & Type == "Retrospective"],
     aes(yintercept = me), linetype = "dashed", alpha = 0.5) +
   scale_y_continuous(
     trans = "log2",
@@ -599,11 +639,15 @@ p_figure_3 <- ggplot(dt_model_comparison[`Time point` == "Time of peak"][
     labels = c("10", "20", "40", "80", "160", "320", "640", "1280", "2560", "5120")) +
   facet_nested(`Infection history` ~ Wave + `Titre type`, scales = "free") +
   theme_linedraw() +
-  theme(strip.background = element_rect(fill = "white"),
+  theme(legend.position = "none",
+        strip.background = element_rect(fill = "white"),
         strip.text = element_text(colour = "black"),
         axis.text.x = element_text(angle = 45, vjust = 0.5),
-        legend.position = "none") +
-  labs(title = "Difference between retrospective and real-time fits at peak titre",
+        text = element_text(size = 8, family = "Helvetica"),
+        strip.placement = "outside",
+        plot.title = element_text(face = "bold", size = 9),
+        panel.grid = element_line(linewidth = 0.4)) +
+  labs(title = "Difference in titres between retrospective and real-time fits at time of novel VOC emergence",
        tag = "B",
        x = "Model type", y = expression(paste("Titre at peak (", IC[50], ")"))) +
   scale_x_discrete(labels = function(x) sapply(strsplit(x, " - "), `[`, 1))
@@ -637,8 +681,9 @@ p_figure_3_all <- cowplot::plot_grid(
   p2, p_figure_3, ncol = 1, rel_heights = c(1, 1))
 
 # Saving main figure --- just peak titre values
-ggsave("outputs/figures/figure_3.png", p_figure_3_all, width = 10, height = 12)
-ggsave("outputs/figures/figure_3.svg", p_figure_3_all, width = 10, height = 12)
+ggsave("outputs/figures/figure_3.png", p_figure_3_all, width = 8, height = 11)
+ggsave("outputs/figures/figure_3.pdf", p_figure_3_all, width = 8, height = 11)
+ggsave("outputs/figures/figure_3.svg", p_figure_3_all, width = 8, height = 11)
 
 # Saving supplementary figure with all three time points
 ggsave(
@@ -649,5 +694,6 @@ ggsave(
   "outputs/figures/supplementary_figures/realtime_vs_retrospective.svg",
   p_sX, width = 13, height = 13)
 
-
-
+ggsave(
+  "outputs/figures/supplementary_figures/realtime_vs_retrospective.pdf",
+  p_sX, width = 13, height = 13)

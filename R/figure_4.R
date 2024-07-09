@@ -1,6 +1,6 @@
 figure_4_data <- function(
     fit, dt_stan, stan_data, formula_val, wave_manual,
-    cleaned_names = c("Infection history", "Titre type"),
+    t_manual, cleaned_names = c("Infection history", "Titre type"),
     n_draws = 2500) {
 
   # Extracting population-level parameters
@@ -18,9 +18,15 @@ figure_4_data <- function(
       ts_pop, t0_pop, tp_pop, ts_pop, m1_pop, m2_pop, m3_pop)),
     by = c("p", "k", ".draw", "Wave")]
 
+  if(!is.null(t_manual)) {
+    dt_peak_switch[, mu_t := simulate_trajectory(
+        t_manual, t0_pop, tp_pop, ts_pop, m1_pop, m2_pop, m3_pop),
+      by = c("p", "k", ".draw", "Wave")]
+  }
+
   # Convert back to natural units
   convert_log_scale_inverse(
-    dt_peak_switch, vars_to_transform = c("mu_0", "mu_p", "mu_s"))
+    dt_peak_switch, vars_to_transform = c("mu_0", "mu_p", "mu_s", "mu_t"))
 
   # Recover which covariates were used in the inference
   dt_peak_switch_plot <- recover_covariate_names(

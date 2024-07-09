@@ -3,18 +3,21 @@ dt_pop_params_delta <- figure_4_data(
   fit_delta_full, dt_delta_full,
   stan_data_delta_full, covariate_formula,
   wave_manual = "Delta wave",
+  t_manual = 60,
   cleaned_names = c("Infection history", "Titre type"))
 
 dt_pop_params_ba2 <- figure_4_data(
   fit_ba2_full, dt_ba2_full,
   stan_data_ba2_full, covariate_formula,
   wave_manual = "BA.2 wave",
+  t_manual = 76,
   cleaned_names = c("Infection history", "Titre type"))
 
 dt_pop_params_xbb <- figure_4_data(
   fit_xbb_full, dt_xbb_full,
   stan_data_xbb_full, covariate_formula,
   wave_manual = "XBB wave",
+  t_manual = 49,
   cleaned_names = c("Infection history", "Titre type"))
 
 dt_figure_4_data <- rbind(
@@ -226,6 +229,12 @@ p_figure_4_2 <- dt_figure_4_2_sum |>
 figure_4 <- cowplot::plot_grid(p_figure_4, p_figure_4_2, nrow = 2, rel_heights = c(1, 0.6))
 
 ggsave("outputs/figures/figure_4.png",
+       figure_4,
+       width = 10,
+       height = 8,
+       bg = "white")
+
+ggsave("outputs/figures/figure_4.pdf",
        figure_4,
        width = 10,
        height = 8,

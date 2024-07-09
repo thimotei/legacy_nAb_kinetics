@@ -94,7 +94,7 @@ build_figure_2 <- function(
       aes(x = t,
           y = me,
           colour = `Titre type`,
-          linetype = "Retrospective")) +
+          linetype = "Real-time")) +
     geom_ribbon(data = dt_fits_pre_plot,
       aes(x = t,
           ymin = lo,
@@ -156,7 +156,7 @@ build_figure_2 <- function(
         aes(x = t,
             y = me,
             colour = `Titre type`,
-            linetype = "Real-time")) +
+            linetype = "Retrospective")) +
       geom_ribbon(
         data = dt_fits_post_plot,
         aes(x = t,
