@@ -156,7 +156,7 @@ p_figure_2_a <- build_figure_2(
 # Delta fits
 dt_ind_traj_sum_delta <- simulate_and_sum_ind(
   fit_delta_full, dt_delta_full,
-  n_draws = 10, wave_manual = "Delta",
+  n_draws = 2000, wave_manual = "Delta",
   scale = "log", adjust_dates = FALSE,
   time_shift = 0, t_max = 150, covariate_formula)
 
@@ -169,7 +169,7 @@ dt_delta_full_stan_plot <- convert_log_scale_inverse(
 # BA.2 fits
 dt_ind_traj_sum_ba2 <- simulate_and_sum_ind(
   fit_ba2_full, dt_ba2_full,
-  n_draws = 10, wave_manual = "BA.2",
+  n_draws = 2000, wave_manual = "BA.2",
   scale = "log", adjust_dates = FALSE,
   time_shift = 0, t_max = 150, covariate_formula)
 
@@ -182,7 +182,7 @@ dt_ba2_full_stan_plot <- convert_log_scale_inverse(
 # XBB fits
 dt_ind_traj_sum_xbb <- simulate_and_sum_ind(
   fit_xbb_full, dt_xbb_full,
-  n_draws = 10, wave_manual = "XBB",
+  n_draws = 2000, wave_manual = "XBB",
   scale = "log", adjust_dates = FALSE,
   time_shift = 0, t_max = 150, covariate_formula)
 
