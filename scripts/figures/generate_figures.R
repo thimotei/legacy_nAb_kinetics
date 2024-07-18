@@ -15,6 +15,7 @@ library(lubridate)
 library(tidybayes)
 library(stringr)
 library(truncnorm)
+library(zoo)
 
 # Source all functions ----------------------------------------------------
 source("R/source.R")
