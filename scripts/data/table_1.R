@@ -1,8 +1,10 @@
 # Loading data
-source("scripts/inference/delta.R")
-source("scripts/inference/ba2.R")
-source("scripts/inference/xbb.R")
-source("scripts/inference/no_exposures.R")
+dt_inf <- fread("data/infections.rds")
+dt_vax <- fread("data/vaccines.rds")
+
+dt_delta_full <- fread("data/delta_full.rds")
+dt_ba2_full <- fread("data/ba2_full.rds")
+dt_xbb_full <- fread("data/xbb_full.rds")
 
 #------------------------------------------------#
 #----- Extracting data and parameter values -----#
@@ -14,7 +16,7 @@ dt_all_data_table <- copy(rbind(
   dt_xbb_full[, Wave := "XBB"]))
 
 # Loading the full data object - NOT publicly available
-load("data/Legacy_DataAnnotatedDateSeries_2023-11-09.RData")
+load("data_raw/Legacy_DataAnnotatedDateSeries_2023-11-09.RData")
 
 # Convert the data.frame to a data.table
 dt_raw <- data.table(chrono.df)
@@ -99,14 +101,14 @@ dt_vax_totals[order(
 dt_age <- dt_comorbidity_trim[
   , .(id, age, Wave)][
   , .SD[age == unique(age)], by = id][
-  , .(mean = signif(mean(age, na.rm = TRUE), 2),
+  , .(median = signif(median(age, na.rm = TRUE), 2),
       iqr = signif(IQR(age, na.rm = TRUE), 2)),
-      by = Wave]
+  by = Wave]
 
 dt_all_data_table[, uniqueN(id)]
 
-dt_age[, lo := mean - iqr]
-dt_age[, hi := mean + iqr]
+dt_age[, lo := median - iqr]
+dt_age[, hi := median + iqr]
 
 dt_age
 
