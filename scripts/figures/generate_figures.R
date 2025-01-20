@@ -59,6 +59,11 @@ manual_pal <-
     "#D95F02",
     "#66A61E")
 
+# Create the folder for the fits if it doesn't exist
+if(!dir.exists("outputs/fits")) {
+  dir.create("outputs/fits", recursive = TRUE)
+}
+
 # Extract wave data and run inference ------------------------------------
 # (does not run if fit objects exist already) ----------------------------
 source("scripts/inference/delta.R")
