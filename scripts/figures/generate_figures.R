@@ -30,15 +30,15 @@ sourceCpp("cpp/convert_log_scale_inverse.cpp")
 
 # These two data objects are not currently publicly available
 # All of the others are
-dt_inf <- fread("data/infections.rds")
-dt_vax <- fread("data/vaccines.rds")
+dt_inf <- fread("data/infections.csv")
+dt_vax <- fread("data/vaccines.csv")
 
-dt_delta_trunc <- fread("data/delta_trunc.rds")
-dt_delta_full <- fread("data/delta_full.rds")
-dt_ba2_trunc <- fread("data/ba2_trunc.rds")
-dt_ba2_full <- fread("data/ba2_full.rds")
-dt_xbb_trunc <- fread("data/xbb_trunc.rds")
-dt_xbb_full <- fread("data/xbb_full.rds")
+dt_delta_trunc <- fread("data/delta_trunc.csv")
+dt_delta_full <- fread("data/delta_full.csv")
+dt_ba2_trunc <- fread("data/ba2_trunc.csv")
+dt_ba2_full <- fread("data/ba2_full.csv")
+dt_xbb_trunc <- fread("data/xbb_trunc.csv")
+dt_xbb_full <- fread("data/xbb_full.csv")
 
 # Setting emergence dates
 date_delta <- ymd("2021-05-07")
